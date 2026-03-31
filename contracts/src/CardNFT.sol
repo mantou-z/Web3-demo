@@ -4,11 +4,9 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract CardNFT is ERC721, ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _tokenIdCounter;
 
     enum CardRarity {
         Basic,   // 基础卡片
@@ -49,14 +47,17 @@ contract CardNFT is ERC721, ERC721URIStorage, Ownable {
     function forgeCard(
         address to,
         CardRarity rarity,
-        OreType oreType,
+        uint8 oreTypeValue,
         uint256[] calldata sourceOreIds
     ) external returns (uint256) {
         require(msg.sender == forgeEngine || msg.sender == owner(), "Not authorized");
         require(sourceOreIds.length > 0, "No source ores");
+        require(oreTypeValue <= uint8(OreType.Connection), "Invalid ore type");
 
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        _tokenIdCounter++;
+        uint256 newTokenId = _tokenIdCounter;
+
+        OreType oreType = OreType(oreTypeValue);
 
         _safeMint(to, newTokenId);
 
@@ -73,7 +74,7 @@ contract CardNFT is ERC721, ERC721URIStorage, Ownable {
     }
 
     function getCard(uint256 tokenId) external view returns (Card memory) {
-        require(_exists(tokenId), "Card does not exist");
+        require(_ownerOf(tokenId) != address(0), "Card does not exist");
         return cards[tokenId];
     }
 
@@ -82,7 +83,7 @@ contract CardNFT is ERC721, ERC721URIStorage, Ownable {
         uint256[] memory tokenIds = new uint256[](balance);
         uint256 index = 0;
 
-        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
+        for (uint256 i = 1; i <= _tokenIdCounter; i++) {
             if (ownerOf(i) == owner_) {
                 tokenIds[index] = i;
                 index++;
@@ -91,16 +92,11 @@ contract CardNFT is ERC721, ERC721URIStorage, Ownable {
         return tokenIds;
     }
 
-    // Override required by Solidity
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
-
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
     }
 }

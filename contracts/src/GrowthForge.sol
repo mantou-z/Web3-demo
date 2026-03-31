@@ -142,7 +142,7 @@ contract GrowthForge is Ownable {
         // 验证所有矿石属于同一类型且属于调用者
         for (uint256 i = 0; i < _oreIds.length; i++) {
             require(oreNFT.ownerOf(_oreIds[i]) == msg.sender, "Not ore owner");
-            OreNFT.OreMemory ore = oreNFT.getOre(_oreIds[i]);
+            OreNFT.Ore memory ore = oreNFT.getOre(_oreIds[i]);
             require(ore.oreType == _expectedType, "Ore type mismatch");
         }
 
@@ -150,7 +150,7 @@ contract GrowthForge is Ownable {
         uint256 cardId = cardNFT.forgeCard(
             msg.sender,
             CardNFT.CardRarity.Basic,
-            CardNFT.OreType(_expectedType),
+            uint8(_expectedType),
             _oreIds
         );
 

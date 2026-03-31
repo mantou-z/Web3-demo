@@ -4,11 +4,9 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract OreNFT is ERC721, ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _tokenIdCounter;
 
     enum OreType {
         Wisdom,    // 智慧矿石 - 学习类
@@ -54,8 +52,8 @@ contract OreNFT is ERC721, ERC721URIStorage, Ownable {
         require(msg.sender == forgeEngine || msg.sender == owner(), "Not authorized");
         require(quality >= 1 && quality <= 5, "Invalid quality");
 
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        _tokenIdCounter++;
+        uint256 newTokenId = _tokenIdCounter;
 
         _safeMint(to, newTokenId);
 
@@ -73,7 +71,7 @@ contract OreNFT is ERC721, ERC721URIStorage, Ownable {
     }
 
     function getOre(uint256 tokenId) external view returns (Ore memory) {
-        require(_exists(tokenId), "Ore does not exist");
+        require(_ownerOf(tokenId) != address(0), "Ore does not exist");
         return ores[tokenId];
     }
 
@@ -82,7 +80,7 @@ contract OreNFT is ERC721, ERC721URIStorage, Ownable {
         uint256[] memory tokenIds = new uint256[](balance);
         uint256 index = 0;
 
-        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
+        for (uint256 i = 1; i <= _tokenIdCounter; i++) {
             if (ownerOf(i) == owner_) {
                 tokenIds[index] = i;
                 index++;
@@ -91,16 +89,11 @@ contract OreNFT is ERC721, ERC721URIStorage, Ownable {
         return tokenIds;
     }
 
-    // Override required by Solidity
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
-
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
     }
 }
