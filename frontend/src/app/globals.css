@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F8F6FF;
+  --foreground: #1F2937;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 矿石渐变效果 */
+.ore-gradient-wisdom {
+  background: linear-gradient(135deg, #60A5FA, #3B82F6);
+}
+
+.ore-gradient-will {
+  background: linear-gradient(135deg, #F87171, #EF4444);
+}
+
+.ore-gradient-creation {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+}
+
+.ore-gradient-connection {
+  background: linear-gradient(135deg, #34D399, #10B981);
+}
+
+/* 卡片效果 */
+.card-magical {
+  background: linear-gradient(145deg, #ffffff, #f3f4f6);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.card-magical:hover {
+  box-shadow: 
+    0 10px 15px -3px rgba(139, 92, 246, 0.2),
+    0 4px 6px -2px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 魔幻光晕效果 */
+.magical-glow {
+  position: relative;
+}
+
+.magical-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #8B5CF6, #3B82F6, #10B981, #F59E0B);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.magical-glow:hover::before {
+  opacity: 1;
+}
+
+/* 品质星级 */
+.star-quality {
+  color: #FBBF24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+/* 粒子背景 */
+.particles-bg {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+}
+
+/* 按钮样式 */
+.btn-magical {
+  @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+  background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.btn-magical:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+.btn-magical:active {
+  transform: translateY(0);
+}
+
+/* 输入框样式 */
+.input-magical {
+  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 transition-all duration-300;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.input-magical:focus {
+  @apply outline-none border-purple-400;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* 进度条 */
+.progress-magical {
+  @apply h-3 rounded-full overflow-hidden;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.progress-magical-fill {
+  @apply h-full rounded-full transition-all duration-500;
+  background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+}
