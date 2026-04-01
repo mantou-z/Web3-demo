@@ -62,9 +62,6 @@ contract GrowthForge is Ownable {
     constructor(address _oreNFT, address _cardNFT) Ownable(msg.sender) {
         oreNFT = OreNFT(_oreNFT);
         cardNFT = CardNFT(_cardNFT);
-
-        oreNFT.setForgeEngine(address(this));
-        cardNFT.setForgeEngine(address(this));
     }
 
     function createGoal(
