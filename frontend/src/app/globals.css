@@ -2,48 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --background: #F8F6FF;
-  --foreground: #1F2937;
+  --background: #0a0a0f;
+  --foreground: #e5e5e5;
+  --card-bg: #14141f;
+  --card-border: #1f1f2e;
+  --primary-purple: #8B5CF6;
+  --primary-blue: #3B82F6;
+  --accent-gold: #FBBF24;
+  --glow-purple: rgba(139, 92, 246, 0.3);
+  --glow-blue: rgba(59, 130, 246, 0.3);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+}
+
+/* 深色背景渐变 */
+.dark-gradient {
+  background: linear-gradient(180deg, #0a0a0f 0%, #14141f 50%, #1a1a2e 100%);
 }
 
 /* 矿石渐变效果 */
 .ore-gradient-wisdom {
   background: linear-gradient(135deg, #60A5FA, #3B82F6);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
 }
 
 .ore-gradient-will {
   background: linear-gradient(135deg, #F87171, #EF4444);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
 .ore-gradient-creation {
   background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
 }
 
 .ore-gradient-connection {
   background: linear-gradient(135deg, #34D399, #10B981);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
 }
 
-/* 卡片效果 */
-.card-magical {
-  background: linear-gradient(145deg, #ffffff, #f3f4f6);
+/* 毛玻璃效果 */
+.glass {
+  background: rgba(20, 20, 31, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 深色卡片效果 */
+.card-dark {
+  background: linear-gradient(145deg, #1a1a2e, #14141f);
+  border: 1px solid rgba(139, 92, 246, 0.2);
   box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.card-magical:hover {
+.card-dark:hover {
+  border-color: rgba(139, 92, 246, 0.4);
   box-shadow: 
     0 10px 15px -3px rgba(139, 92, 246, 0.2),
     0 4px 6px -2px rgba(139, 92, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* 魔幻光晕效果 */
@@ -60,10 +93,11 @@ body {
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;
+  filter: blur(8px);
 }
 
 .magical-glow:hover::before {
-  opacity: 1;
+  opacity: 0.6;
 }
 
 /* 品质星级 */
@@ -75,37 +109,83 @@ body {
 /* 粒子背景 */
 .particles-bg {
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
 }
 
-/* 按钮样式 */
+/* 按钮样式 - 金色呼吸灯 */
 .btn-magical {
   @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
   background: linear-gradient(135deg, #8B5CF6, #3B82F6);
   color: white;
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-magical::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .btn-magical:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
+}
+
+.btn-magical:hover::before {
+  opacity: 1;
 }
 
 .btn-magical:active {
   transform: translateY(0);
 }
 
-/* 输入框样式 */
+/* 金色按钮 */
+.btn-gold {
+  @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  color: #1a1a2e;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  animation: gold-pulse 2s infinite;
+}
+
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(251, 191, 36, 0.7);
+  }
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(251, 191, 36, 0.6);
+}
+
+/* 输入框样式 - 毛玻璃 */
 .input-magical {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 transition-all duration-300;
-  background: rgba(255, 255, 255, 0.8);
+  @apply w-full px-4 py-3 rounded-xl transition-all duration-300;
+  background: rgba(20, 20, 31, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e5e5;
+  backdrop-filter: blur(10px);
 }
 
 .input-magical:focus {
-  @apply outline-none border-purple-400;
+  @apply outline-none;
+  border-color: rgba(139, 92, 246, 0.5);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.input-magical::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 /* 进度条 */
@@ -117,4 +197,103 @@ body {
 .progress-magical-fill {
   @apply h-full rounded-full transition-all duration-500;
   background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 发光脉冲 */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* 矿石旋转 */
+@keyframes ore-spin {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.ore-spin {
+  animation: ore-spin 3s linear infinite;
+}
+
+/* 法阵发光 */
+@keyframes rune-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.8));
+  }
+}
+
+.rune-glow {
+  animation: rune-glow 2s ease-in-out infinite;
+}
+
+/* 粒子效果 */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(139, 92, 246, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5);
+}
+
+/* 文本渐变 */
+.text-gradient {
+  background: linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

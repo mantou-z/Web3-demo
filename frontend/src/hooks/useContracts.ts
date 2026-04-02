@@ -1,91 +1,179 @@
 'use client'
 
-import { useReadContract, useWriteContract } from 'wagmi'
-import { CONTRACT_ADDRESSES, GrowthForgeABI, OreNFTABI } from '@/contracts/addresses'
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 
-// 读取用户目标列表
-export function useUserGoals(address: `0x${string}` | undefined) {
+// 合约地址 - 需要部署后更新
+const ALCHEME_SBT_ADDRESS = process.env.NEXT_PUBLIC_ALCHEME_SBT_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000'
+
+// AlchemeSBT ABI
+const AlchemeSBTABI = [
+  {
+    "inputs": [
+      { "name": "to", "type": "address" },
+      { "name": "uri", "type": "string" },
+      { "name": "title", "type": "string" },
+      { "name": "description", "type": "string" }
+    ],
+    "name": "mint",
+    "outputs": [{ "name": "tokenId", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "name": "tokenId", "type": "uint256" },
+      { "name": "newUri", "type": "string" },
+      { "name": "newTitle", "type": "string" },
+      { "name": "newDescription", "type": "string" }
+    ],
+    "name": "evolve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "tokenId", "type": "uint256" }],
+    "name": "tokenURI",
+    "outputs": [{ "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "tokenId", "type": "uint256" }],
+    "name": "getMedalData",
+    "outputs": [
+      {
+        "components": [
+          { "name": "title", "type": "string" },
+          { "name": "description", "type": "string" },
+          { "name": "createdAt", "type": "uint256" },
+          { "name": "creator", "type": "address" }
+        ],
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "owner_", "type": "address" }],
+    "name": "getTokensByOwner",
+    "outputs": [{ "name": "", "type": "uint256[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "owner_", "type": "address" }],
+    "name": "balanceOf",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] as const
+
+// 读取用户勋章
+export function useUserMedals(address: `0x${string}` | undefined) {
   return useReadContract({
-    address: CONTRACT_ADDRESSES.GrowthForge as `0x${string}`,
-    abi: GrowthForgeABI,
-    functionName: 'getUserGoals',
+    address: ALCHEME_SBT_ADDRESS,
+    abi: AlchemeSBTABI,
+    functionName: 'getTokensByOwner',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address,
+      enabled: !!address && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
     },
   })
 }
 
-// 读取单个目标详情
-export function useGoal(goalId: bigint | undefined) {
+// 读取勋章详情
+export function useMedalData(tokenId: bigint | undefined) {
   return useReadContract({
-    address: CONTRACT_ADDRESSES.GrowthForge as `0x${string}`,
-    abi: GrowthForgeABI,
-    functionName: 'getGoal',
-    args: goalId !== undefined ? [goalId] : undefined,
+    address: ALCHEME_SBT_ADDRESS,
+    abi: AlchemeSBTABI,
+    functionName: 'getMedalData',
+    args: tokenId !== undefined ? [tokenId] : undefined,
     query: {
-      enabled: goalId !== undefined,
+      enabled: tokenId !== undefined && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
     },
   })
 }
 
-// 创建目标
-export function useCreateGoal() {
-  const { writeContract, isPending, error } = useWriteContract()
-
-  const createGoal = (name: string, description: string, category: number) => {
-    writeContract({
-      address: CONTRACT_ADDRESSES.GrowthForge as `0x${string}`,
-      abi: GrowthForgeABI,
-      functionName: 'createGoal',
-      args: [name, description, category],
-    })
-  }
-
-  return { createGoal, isPending, error }
-}
-
-// 记录每日打卡
-export function useRecordDaily() {
-  const { writeContract, isPending, error } = useWriteContract()
-
-  const recordDaily = (goalId: bigint, contentHash: string, quality: number) => {
-    writeContract({
-      address: CONTRACT_ADDRESSES.GrowthForge as `0x${string}`,
-      abi: GrowthForgeABI,
-      functionName: 'recordDaily',
-      args: [goalId, contentHash, quality],
-    })
-  }
-
-  return { recordDaily, isPending, error }
-}
-
-// 读取用户矿石列表
-export function useUserOres(address: `0x${string}` | undefined) {
+// 读取tokenURI
+export function useTokenURI(tokenId: bigint | undefined) {
   return useReadContract({
-    address: CONTRACT_ADDRESSES.OreNFT as `0x${string}`,
-    abi: OreNFTABI,
-    functionName: 'getOresByOwner',
+    address: ALCHEME_SBT_ADDRESS,
+    abi: AlchemeSBTABI,
+    functionName: 'tokenURI',
+    args: tokenId !== undefined ? [tokenId] : undefined,
+    query: {
+      enabled: tokenId !== undefined && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
+    },
+  })
+}
+
+// 铸造勋章
+export function useMintMedal() {
+  const { writeContract, isPending, error, data: hash } = useWriteContract()
+  
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  })
+
+  const mintMedal = (to: `0x${string}`, uri: string, title: string, description: string) => {
+    writeContract({
+      address: ALCHEME_SBT_ADDRESS,
+      abi: AlchemeSBTABI,
+      functionName: 'mint',
+      args: [to, uri, title, description],
+    })
+  }
+
+  return { 
+    mintMedal, 
+    isPending, 
+    isConfirming, 
+    isConfirmed, 
+    error, 
+    hash 
+  }
+}
+
+// 进化勋章
+export function useEvolveMedal() {
+  const { writeContract, isPending, error, data: hash } = useWriteContract()
+  
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  })
+
+  const evolveMedal = (tokenId: bigint, newUri: string, newTitle: string, newDescription: string) => {
+    writeContract({
+      address: ALCHEME_SBT_ADDRESS,
+      abi: AlchemeSBTABI,
+      functionName: 'evolve',
+      args: [tokenId, newUri, newTitle, newDescription],
+    })
+  }
+
+  return { 
+    evolveMedal, 
+    isPending, 
+    isConfirming, 
+    isConfirmed, 
+    error, 
+    hash 
+  }
+}
+
+// 读取用户余额
+export function useMedalBalance(address: `0x${string}` | undefined) {
+  return useReadContract({
+    address: ALCHEME_SBT_ADDRESS,
+    abi: AlchemeSBTABI,
+    functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address,
+      enabled: !!address && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
     },
   })
-}
-
-// 锻造卡片
-export function useForgeCard() {
-  const { writeContract, isPending, error } = useWriteContract()
-
-  const forgeCard = (oreIds: bigint[], expectedType: number) => {
-    writeContract({
-      address: CONTRACT_ADDRESSES.GrowthForge as `0x${string}`,
-      abi: GrowthForgeABI,
-      functionName: 'forgeBasicCard',
-      args: [oreIds, expectedType],
-    })
-  }
-
-  return { forgeCard, isPending, error }
 }
