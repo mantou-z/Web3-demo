@@ -31,6 +31,7 @@ export default function AwakeningPage() {
   const [showCircle, setShowCircle] = useState(false)
   const [isAwakening, setIsAwakening] = useState(false)
   const [newMedal, setNewMedal] = useState<{ id: string; title: string; description: string; imageUrl: string } | null>(null)
+  const [editableMedalTitle, setEditableMedalTitle] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -124,6 +125,7 @@ export default function AwakeningPage() {
           description: result.medal.description,
           imageUrl: result.medal.image_url
         })
+        setEditableMedalTitle(result.medal.title)
       } else {
         setError(result.error || '觉醒失败')
       }
@@ -137,10 +139,23 @@ export default function AwakeningPage() {
   const handleMintToChain = async () => {
     if (!newMedal) return
 
+    // 如果标题被修改，先保存到后端
+    if (editableMedalTitle !== newMedal.title) {
+      try {
+        await fetch(`/api/medals/${newMedal.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: editableMedalTitle })
+        })
+      } catch (error) {
+        console.error('Error saving medal title:', error)
+      }
+    }
+
     try {
       mintMedal(
         newMedal.imageUrl,
-        newMedal.title,
+        editableMedalTitle,
         newMedal.description
       )
     } catch (error) {
@@ -388,7 +403,12 @@ export default function AwakeningPage() {
             </motion.div>
 
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-white mb-2">{newMedal.title}</h3>
+              <input
+                type="text"
+                value={editableMedalTitle}
+                onChange={(e) => setEditableMedalTitle(e.target.value)}
+                className="w-full bg-transparent text-center text-2xl font-bold text-white border-b border-yellow-500/50 focus:outline-none focus:border-yellow-500 mb-2"
+              />
               <p className="text-gray-400">{newMedal.description}</p>
             </div>
 

@@ -1,6 +1,7 @@
 # 使用方法
 后端:
 cd backend
+npm install  #如果环境配置已完成，跳过此步骤
 node src/index.js
 
 
@@ -13,5 +14,7 @@ remix编译合约并使用custom网络进行部署
 
 前端：
 cd frontend
+npm install  #如果环境配置已完成，跳过此步骤
+rm -rf .next  #如果需要清除缓存，可使用该指令
 npm run build
 npm run dev -- -p 3000

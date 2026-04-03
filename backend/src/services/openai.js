@@ -4,10 +4,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const apiKey = process.env.OPENAI_API_KEY;
+const apiBaseUrl = process.env.OPENAI_API_BASE_URL;
+const chatModel = process.env.CHAT_MODEL || 'gpt-4o-mini';
+const imageModel = process.env.IMAGE_MODEL || 'dall-e-3';
 
 let openai = null;
 if (apiKey) {
-  openai = new OpenAI({ apiKey });
+  const config = { apiKey };
+  if (apiBaseUrl) {
+    config.baseURL = apiBaseUrl;
+  }
+  openai = new OpenAI(config);
 } else {
   console.warn('OpenAI API key not configured. Using mock responses.');
 }
@@ -28,7 +35,7 @@ export async function extractOres(userInput) {
   }
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: chatModel,
     messages: [
       {
         role: 'system',
@@ -83,7 +90,7 @@ export async function refineOres(ores) {
   }
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: chatModel,
     messages: [
       {
         role: 'system',
@@ -121,7 +128,7 @@ export async function generateCardImage(imagePrompt) {
   }
 
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    model: imageModel,
     prompt: `Fantasy alchemy card art style: ${imagePrompt}. Magical, mystical, gem-like quality.`,
     n: 1,
     size: '1024x1024'
@@ -147,7 +154,7 @@ export async function awakenMedal(cards, existingMedal = null) {
   }
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: chatModel,
     messages: [
       {
         role: 'system',
@@ -184,7 +191,7 @@ export async function generateMedalImage(imagePrompt) {
   }
 
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    model: imageModel,
     prompt: `Sacred geometric medal art style: ${imagePrompt}. Glowing, ethereal, SBT token aesthetic.`,
     n: 1,
     size: '1024x1024'

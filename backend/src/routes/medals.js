@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { db } from '../utils/supabase.js';
 import { awakenMedal, generateMedalImage } from '../services/openai.js';
+import { uploadImageToIPFS } from '../utils/ipfs.js';
+import { getRandomMedalImage } from '../utils/localImages.js';
+
+const USE_AI_IMAGES = process.env.USE_AI_IMAGES !== 'false';
 
 const router = Router();
 
@@ -33,8 +37,17 @@ router.post('/awaken', async (req, res) => {
     // Generate medal content using AI
     const medalContent = await awakenMedal(selectedCards, existingMedal);
 
-    // Generate medal image
-    const imageUrl = await generateMedalImage(medalContent.imagePrompt);
+    // Choose image source based on env config
+    let imageUrl;
+    if (USE_AI_IMAGES) {
+      const generatedImageUrl = await generateMedalImage(medalContent.imagePrompt);
+      imageUrl = await uploadImageToIPFS(generatedImageUrl);
+    } else {
+      imageUrl = getRandomMedalImage();
+      if (!imageUrl) {
+        imageUrl = 'https://placehold.co/400x400/1a1a2e/gold?text=Medal';
+      }
+    }
 
     let medal;
     const parentIds = existingMedal
@@ -112,6 +125,36 @@ router.get('/:walletAddress', async (req, res) => {
   } catch (error) {
     console.error('Error fetching medals:', error);
     res.status(500).json({ error: 'Failed to fetch medals' });
+  }
+});
+
+// Update medal title or description
+router.put('/:medalId', async (req, res) => {
+  try {
+    const { medalId } = req.params;
+    const { title, description } = req.body;
+
+    if (!title && !description) {
+      return res.status(400).json({ error: 'Missing title or description' });
+    }
+
+    const updates = {};
+    if (title) updates.title = title;
+    if (description) updates.description = description;
+
+    const updatedMedal = await db.updateMedal(medalId, updates);
+
+    if (!updatedMedal) {
+      return res.status(404).json({ error: 'Medal not found' });
+    }
+
+    res.json({
+      success: true,
+      medal: updatedMedal
+    });
+  } catch (error) {
+    console.error('Error updating medal:', error);
+    res.status(500).json({ error: 'Failed to update medal' });
   }
 });
 

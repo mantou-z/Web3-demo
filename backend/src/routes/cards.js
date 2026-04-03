@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { db } from '../utils/supabase.js';
 import { refineOres, generateCardImage } from '../services/openai.js';
+import { uploadImageToIPFS } from '../utils/ipfs.js';
+import { getRandomCardImage } from '../utils/localImages.js';
+
+const USE_AI_IMAGES = process.env.USE_AI_IMAGES !== 'false';
 
 const router = Router();
 
@@ -26,8 +30,17 @@ router.post('/refine', async (req, res) => {
     // Refine ores using AI
     const refinement = await refineOres(selectedOres);
 
-    // Generate card image
-    const imageUrl = await generateCardImage(refinement.imagePrompt);
+    // Choose image source based on env config
+    let imageUrl;
+    if (USE_AI_IMAGES) {
+      const generatedImageUrl = await generateCardImage(refinement.imagePrompt);
+      imageUrl = await uploadImageToIPFS(generatedImageUrl);
+    } else {
+      imageUrl = getRandomCardImage();
+      if (!imageUrl) {
+        imageUrl = 'https://placehold.co/400x600/1a1a2e/8b5cf6?text=Card';
+      }
+    }
 
     // Create card
     const card = await db.createCard(
@@ -66,6 +79,32 @@ router.get('/:walletAddress', async (req, res) => {
   } catch (error) {
     console.error('Error fetching cards:', error);
     res.status(500).json({ error: 'Failed to fetch cards' });
+  }
+});
+
+// Update card title
+router.put('/:cardId', async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Missing title' });
+    }
+
+    const updatedCard = await db.updateCard(cardId, { title });
+
+    if (!updatedCard) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    res.json({
+      success: true,
+      card: updatedCard
+    });
+  } catch (error) {
+    console.error('Error updating card:', error);
+    res.status(500).json({ error: 'Failed to update card' });
   }
 });
 

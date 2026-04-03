@@ -157,6 +157,25 @@ export const db = {
     });
   },
 
+  async updateCard(cardId, updates) {
+    if (supabase) {
+      const { data } = await supabase
+        .from('cards')
+        .update(updates)
+        .eq('id', cardId)
+        .select()
+        .single();
+      return data;
+    }
+
+    const card = mockStorage.cards.get(cardId);
+    if (card) {
+      Object.assign(card, updates);
+      return card;
+    }
+    return null;
+  },
+
   // Medal operations
   async createMedal(userId, title, description, imageUrl, tokenId, parentIds) {
     const medalId = `medal_${Date.now()}`;

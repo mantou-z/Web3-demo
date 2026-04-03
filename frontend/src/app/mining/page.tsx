@@ -4,7 +4,21 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAccount } from 'wagmi'
 
-interface Ore {
+interface SavedOre {
+  id: string
+  user_id: string
+  raw_input: string
+  refined_data: {
+    id: number
+    text: string
+    dimension: 'Wisdom' | 'Will' | 'Creation' | 'Connection'
+    score: number
+  }
+  status: string
+  created_at: string
+}
+
+interface EditingOre {
   id: number
   text: string
   dimension: 'Wisdom' | 'Will' | 'Creation' | 'Connection'
@@ -22,9 +36,31 @@ export default function MiningPage() {
   const { isConnected, address } = useAccount()
   const [stage, setStage] = useState<'welcome' | 'mining' | 'refining' | 'complete'>('welcome')
   const [input, setInput] = useState('')
-  const [ores, setOres] = useState<Ore[]>([])
+  const [ores, setOres] = useState<EditingOre[]>([])
+  const [savedOres, setSavedOres] = useState<SavedOre[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [showInput, setShowInput] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isConnected && address) {
+      fetchSavedOres()
+    }
+  }, [isConnected, address])
+
+  const fetchSavedOres = async () => {
+    try {
+      const res = await fetch(`/api/ores/${address}`)
+      const data = await res.json()
+      if (data.success) {
+        setSavedOres(data.ores)
+      }
+    } catch (error) {
+      console.error('Error fetching saved ores:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleAnalyze = async () => {
     if (!input.trim()) return
@@ -33,7 +69,6 @@ export default function MiningPage() {
     setShowInput(false)
     setStage('mining')
 
-    // 凿矿动画至少3秒
     const analyzePromise = fetch('/api/ores/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,7 +88,6 @@ export default function MiningPage() {
       setOres(result.ores)
       setStage('refining')
     } else {
-      // Mock response for development
       setOres([
         { id: 1, text: input.slice(0, 30), dimension: 'Wisdom', score: 4 },
       ])
@@ -80,7 +114,6 @@ export default function MiningPage() {
   }
 
   const handleConfirm = async () => {
-    // 保存矿石到后端
     try {
       await fetch('/api/ores/save', {
         method: 'POST',
@@ -100,6 +133,7 @@ export default function MiningPage() {
       setStage('welcome')
       setInput('')
       setOres([])
+      fetchSavedOres()
     }, 3000)
   }
 
@@ -125,10 +159,18 @@ export default function MiningPage() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-4xl animate-spin">⚙️</div>
+        <p className="text-gray-400 mt-4">加载中...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center">
       <AnimatePresence mode="wait">
-        {/* 欢迎页 */}
         {stage === 'welcome' && (
           <motion.div
             key="welcome"
@@ -143,7 +185,6 @@ export default function MiningPage() {
               transition={{ type: 'spring', duration: 0.8 }}
               className="relative"
             >
-              {/* 矿山 */}
               <div className="w-48 h-48 mx-auto relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-blue-600/30 rounded-full blur-3xl animate-glow-pulse" />
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
@@ -176,10 +217,55 @@ export default function MiningPage() {
             >
               ⛏️ 开始开采
             </motion.button>
+
+            {savedOres.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="mt-8"
+              >
+                <h3 className="text-lg font-semibold text-white mb-4">我的矿石 ({savedOres.length})</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {savedOres.slice(0, 9).map((ore, index) => {
+                    const info = dimensionInfo[ore.refined_data?.dimension || 'Wisdom']
+                    return (
+                      <motion.div
+                        key={ore.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="card-dark p-3 rounded-xl"
+                      >
+                        <div className={`w-10 h-10 mx-auto mb-2 rounded-lg ${info.gradient} flex items-center justify-center text-xl`}>
+                          {info.icon}
+                        </div>
+                        <p className="text-xs text-gray-300 text-center truncate">
+                          {ore.refined_data?.text || '未提炼'}
+                        </p>
+                        <div className="flex items-center justify-center mt-1">
+                          {[...Array(ore.refined_data?.score || 0)].map((_, i) => (
+                            <span key={i} className="text-yellow-400 text-xs">★</span>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-500 text-center mt-1">
+                          {ore.created_at?.split('T')[0] || ''}
+                        </p>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+                {savedOres.length > 9 && (
+                  <p className="text-gray-500 text-sm text-center mt-3">
+                    +{savedOres.length - 9} 更多矿石...
+                  </p>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         )}
 
-        {/* 凿矿动画 */}
         {stage === 'mining' && (
           <motion.div
             key="mining"
@@ -189,10 +275,8 @@ export default function MiningPage() {
             className="text-center space-y-8"
           >
             <div className="relative w-48 h-48 mx-auto">
-              {/* 矿山 */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-blue-600/30 rounded-full blur-2xl" />
               
-              {/* 锤子动画 */}
               <motion.div
                 animate={{
                   rotate: [0, -30, 0, -30, 0],
@@ -208,7 +292,6 @@ export default function MiningPage() {
                 <span className="text-7xl">⛏️</span>
               </motion.div>
 
-              {/* 火星 */}
               {[...Array(8)].map((_, i) => (
                 <motion.div
                   key={i}
@@ -242,7 +325,6 @@ export default function MiningPage() {
           </motion.div>
         )}
 
-        {/* 结果校准 */}
         {stage === 'refining' && (
           <motion.div
             key="refining"
@@ -251,7 +333,6 @@ export default function MiningPage() {
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-lg space-y-6"
           >
-            {/* 旋转矿石 */}
             <div className="text-center">
               <motion.div
                 animate={{ rotateY: 360 }}
@@ -265,7 +346,6 @@ export default function MiningPage() {
               <h2 className="text-xl font-bold text-white mt-4">灵光显现</h2>
             </div>
 
-            {/* 矿石列表 */}
             <div className="card-dark rounded-2xl p-6 space-y-4">
               <p className="text-gray-400 text-sm">以下是AI提炼的灵光矿石：</p>
               
@@ -306,7 +386,6 @@ export default function MiningPage() {
               </button>
             </div>
 
-            {/* 确认按钮 */}
             <div className="text-center space-y-2">
               <p className="text-gray-500 text-sm">
                 这些是你今日精炼的原始矿石，确认收入矿石池吗？
@@ -330,7 +409,6 @@ export default function MiningPage() {
           </motion.div>
         )}
 
-        {/* 完成 */}
         {stage === 'complete' && (
           <motion.div
             key="complete"
@@ -378,7 +456,6 @@ export default function MiningPage() {
         )}
       </AnimatePresence>
 
-      {/* 输入浮窗 */}
       <AnimatePresence>
         {showInput && (
           <motion.div

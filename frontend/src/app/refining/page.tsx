@@ -35,7 +35,7 @@ export default function RefiningPage() {
   const [selectedOres, setSelectedOres] = useState<string[]>([])
   const [showCabinet, setShowCabinet] = useState(false)
   const [isRefining, setIsRefining] = useState(false)
-  const [newCard, setNewCard] = useState<{ title: string; imageUrl: string } | null>(null)
+  const [newCard, setNewCard] = useState<{ id: string; title: string; imageUrl: string } | null>(null)
   const [editableTitle, setEditableTitle] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
@@ -108,6 +108,7 @@ export default function RefiningPage() {
 
       if (result.success) {
         setNewCard({
+          id: result.card.id,
           title: result.card.title,
           imageUrl: result.card.image_url
         })
@@ -123,8 +124,21 @@ export default function RefiningPage() {
     }
   }
 
-  const handleSaveCard = () => {
+  const handleSaveCard = async () => {
     if (!newCard) return
+
+    // 如果标题被修改，保存到后端
+    if (editableTitle !== newCard.title) {
+      try {
+        await fetch(`/api/cards/${newCard.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: editableTitle })
+        })
+      } catch (error) {
+        console.error('Error saving card title:', error)
+      }
+    }
 
     // 刷新数据
     fetchData()
