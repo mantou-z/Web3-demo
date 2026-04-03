@@ -3,7 +3,13 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 
 // 合约地址 - 需要部署后更新
-const ALCHEME_SBT_ADDRESS = process.env.NEXT_PUBLIC_ALCHEME_SBT_ADDRESS as `0x${string}` || '0x0000000000000000000000000000000000000000'
+const ALCHEME_SBT_ADDRESS = (process.env.NEXT_PUBLIC_ALCHEME_SBT_ADDRESS || '0x0000000000000000000000000000000000000000') as `0x${string}`
+
+const isValidAddress = (addr: string): addr is `0x${string}` => {
+  return /^0x[a-fA-F0-9]{40}$/.test(addr) && addr !== '0x0000000000000000000000000000000000000000'
+}
+
+const CONTRACT_ADDRESS = isValidAddress(ALCHEME_SBT_ADDRESS) ? ALCHEME_SBT_ADDRESS : undefined
 
 // AlchemeSBT ABI
 const AlchemeSBTABI = [
@@ -74,12 +80,12 @@ const AlchemeSBTABI = [
 // 读取用户勋章
 export function useUserMedals(address: `0x${string}` | undefined) {
   return useReadContract({
-    address: ALCHEME_SBT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: AlchemeSBTABI,
     functionName: 'getTokensByOwner',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
+      enabled: !!address && !!CONTRACT_ADDRESS,
     },
   })
 }
@@ -87,12 +93,12 @@ export function useUserMedals(address: `0x${string}` | undefined) {
 // 读取勋章详情
 export function useMedalData(tokenId: bigint | undefined) {
   return useReadContract({
-    address: ALCHEME_SBT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: AlchemeSBTABI,
     functionName: 'getMedalData',
     args: tokenId !== undefined ? [tokenId] : undefined,
     query: {
-      enabled: tokenId !== undefined && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
+      enabled: tokenId !== undefined && !!CONTRACT_ADDRESS,
     },
   })
 }
@@ -100,12 +106,12 @@ export function useMedalData(tokenId: bigint | undefined) {
 // 读取tokenURI
 export function useTokenURI(tokenId: bigint | undefined) {
   return useReadContract({
-    address: ALCHEME_SBT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: AlchemeSBTABI,
     functionName: 'tokenURI',
     args: tokenId !== undefined ? [tokenId] : undefined,
     query: {
-      enabled: tokenId !== undefined && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
+      enabled: tokenId !== undefined && !!CONTRACT_ADDRESS,
     },
   })
 }
@@ -114,13 +120,14 @@ export function useTokenURI(tokenId: bigint | undefined) {
 export function useMintMedal() {
   const { writeContract, isPending, error, data: hash } = useWriteContract()
   
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const { data: receipt, isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
 
   const mintMedal = (uri: string, title: string, description: string) => {
+    if (!CONTRACT_ADDRESS) throw new Error('Contract address not configured')
     writeContract({
-      address: ALCHEME_SBT_ADDRESS,
+      address: CONTRACT_ADDRESS,
       abi: AlchemeSBTABI,
       functionName: 'mint',
       args: [uri, title, description],
@@ -133,7 +140,8 @@ export function useMintMedal() {
     isConfirming, 
     isConfirmed, 
     error, 
-    hash 
+    hash,
+    receipt,
   }
 }
 
@@ -146,8 +154,9 @@ export function useEvolveMedal() {
   })
 
   const evolveMedal = (tokenId: bigint, newUri: string, newTitle: string, newDescription: string) => {
+    if (!CONTRACT_ADDRESS) throw new Error('Contract address not configured')
     writeContract({
-      address: ALCHEME_SBT_ADDRESS,
+      address: CONTRACT_ADDRESS,
       abi: AlchemeSBTABI,
       functionName: 'evolve',
       args: [tokenId, newUri, newTitle, newDescription],
@@ -167,12 +176,12 @@ export function useEvolveMedal() {
 // 读取用户余额
 export function useMedalBalance(address: `0x${string}` | undefined) {
   return useReadContract({
-    address: ALCHEME_SBT_ADDRESS,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: AlchemeSBTABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && ALCHEME_SBT_ADDRESS !== '0x0000000000000000000000000000000000000000',
+      enabled: !!address && !!CONTRACT_ADDRESS,
     },
   })
 }

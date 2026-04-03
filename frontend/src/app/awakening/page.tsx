@@ -34,7 +34,7 @@ export default function AwakeningPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed } = useMintMedal()
+  const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed, receipt } = useMintMedal()
 
   useEffect(() => {
     if (isConnected && address) {
@@ -151,19 +151,28 @@ export default function AwakeningPage() {
 
   // 监听铸造成功
   useEffect(() => {
-    if (mintConfirmed && newMedal) {
-      fetch(`/api/medals/${newMedal.id}/mint`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tokenId: Date.now() })
-      }).then(() => {
-        fetchData()
-        setSelectedCards([])
-        setSelectedMedal(null)
-        setNewMedal(null)
+    if (mintConfirmed && receipt && newMedal) {
+      // 从日志中解析 MedalMinted 事件获取真实 tokenId
+      const medalMintedEvent = receipt.logs.find(log => {
+        return log.topics[0] === '0xdccdb8897eec6a644b93d2ff2b1d5a7fee4603857d745585ad971dfcd0ccd299'
       })
+
+      if (medalMintedEvent && medalMintedEvent.topics[2]) {
+        const realTokenId = BigInt(medalMintedEvent.topics[2])
+
+        fetch(`/api/medals/${newMedal.id}/mint`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tokenId: realTokenId.toString() })
+        }).then(() => {
+          fetchData()
+          setSelectedCards([])
+          setSelectedMedal(null)
+          setNewMedal(null)
+        })
+      }
     }
-  }, [mintConfirmed])
+  }, [mintConfirmed, receipt])
 
   const handleReset = () => {
     setSelectedCards([])
