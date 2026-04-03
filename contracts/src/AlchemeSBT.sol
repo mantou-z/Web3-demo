@@ -3,13 +3,12 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title AlchemeSBT - Soul Bound Token for Alcheme
  * @notice ERC-4906 Dynamic SBT that cannot be transferred
  */
-contract AlchemeSBT is ERC721URIStorage, ERC721Enumerable, Ownable {
+contract AlchemeSBT is ERC721URIStorage, ERC721Enumerable {
     uint256 private _tokenIdCounter;
 
     struct MedalData {
@@ -24,35 +23,40 @@ contract AlchemeSBT is ERC721URIStorage, ERC721Enumerable, Ownable {
     event MedalMinted(address indexed creator, uint256 indexed tokenId, string title);
     event MedalEvolved(address indexed creator, uint256 indexed tokenId, string newTitle);
 
-    constructor() ERC721("Alcheme Medal", "ALCHEME") Ownable(msg.sender) {}
+    constructor() ERC721("Alcheme Medal", "ALCHEME") {}
 
+    /**
+     * @notice Mint a new SBT medal - anyone can mint to themselves
+     */
     function mint(
-        address to,
         string calldata uri,
         string calldata title,
         string calldata description
-    ) external onlyOwner returns (uint256 tokenId) {
+    ) external returns (uint256 tokenId) {
         tokenId = _tokenIdCounter++;
-        _safeMint(to, tokenId);
+        _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, uri);
 
         medals[tokenId] = MedalData({
             title: title,
             description: description,
             createdAt: block.timestamp,
-            creator: to
+            creator: msg.sender
         });
 
-        emit MedalMinted(to, tokenId, title);
+        emit MedalMinted(msg.sender, tokenId, title);
     }
 
+    /**
+     * @notice Evolve an existing medal - only the owner can evolve their medal
+     */
     function evolve(
         uint256 tokenId,
         string calldata newUri,
         string calldata newTitle,
         string calldata newDescription
-    ) external onlyOwner {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+    ) external {
+        require(ownerOf(tokenId) == msg.sender, "Not the medal owner");
         
         // Update token URI (emits MetadataUpdate event from IERC4906)
         _setTokenURI(tokenId, newUri);
@@ -90,7 +94,7 @@ contract AlchemeSBT is ERC721URIStorage, ERC721Enumerable, Ownable {
 
     // Prevent transfers (Soul Bound Token)
     function _update(address to, uint256 tokenId, address auth) internal override(ERC721, ERC721Enumerable) returns (address) {
-        address from = ownerOf(tokenId);
+        address from = _ownerOf(tokenId);
         
         // Allow minting (from = address(0)) and burning (to = address(0))
         require(from == address(0) || to == address(0), "Soul Bound Token cannot be transferred");

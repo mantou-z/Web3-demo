@@ -9,7 +9,6 @@ const ALCHEME_SBT_ADDRESS = process.env.NEXT_PUBLIC_ALCHEME_SBT_ADDRESS as `0x${
 const AlchemeSBTABI = [
   {
     "inputs": [
-      { "name": "to", "type": "address" },
       { "name": "uri", "type": "string" },
       { "name": "title", "type": "string" },
       { "name": "description", "type": "string" }
@@ -111,7 +110,7 @@ export function useTokenURI(tokenId: bigint | undefined) {
   })
 }
 
-// 铸造勋章
+// 铸造勋章 - 用户为自己铸造
 export function useMintMedal() {
   const { writeContract, isPending, error, data: hash } = useWriteContract()
   
@@ -119,12 +118,12 @@ export function useMintMedal() {
     hash,
   })
 
-  const mintMedal = (to: `0x${string}`, uri: string, title: string, description: string) => {
+  const mintMedal = (uri: string, title: string, description: string) => {
     writeContract({
       address: ALCHEME_SBT_ADDRESS,
       abi: AlchemeSBTABI,
       functionName: 'mint',
-      args: [to, uri, title, description],
+      args: [uri, title, description],
     })
   }
 

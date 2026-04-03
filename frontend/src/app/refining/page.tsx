@@ -28,37 +28,34 @@ const dimensionInfo = {
   Connection: { name: '连接', icon: '🌿', gradient: 'ore-gradient-connection' },
 }
 
-// Mock data for development
-const mockOres: Ore[] = [
-  { id: 'ore_1', refined_data: { text: '完成Solidity基础语法学习', dimension: 'Wisdom', score: 4 }, created_at: '2026-03-30' },
-  { id: 'ore_2', refined_data: { text: '成功部署第一个智能合约', dimension: 'Wisdom', score: 5 }, created_at: '2026-03-29' },
-  { id: 'ore_3', refined_data: { text: '理解ERC-721标准', dimension: 'Wisdom', score: 4 }, created_at: '2026-03-28' },
-  { id: 'ore_4', refined_data: { text: '连续健身7天', dimension: 'Will', score: 3 }, created_at: '2026-03-27' },
-  { id: 'ore_5', refined_data: { text: '完成UI设计稿', dimension: 'Creation', score: 4 }, created_at: '2026-03-26' },
-]
-
 export default function RefiningPage() {
   const { isConnected, address } = useAccount()
-  const [ores, setOres] = useState<Ore[]>(mockOres)
+  const [ores, setOres] = useState<Ore[]>([])
   const [cards, setCards] = useState<Card[]>([])
   const [selectedOres, setSelectedOres] = useState<string[]>([])
   const [showCabinet, setShowCabinet] = useState(false)
   const [isRefining, setIsRefining] = useState(false)
   const [newCard, setNewCard] = useState<{ title: string; imageUrl: string } | null>(null)
   const [editableTitle, setEditableTitle] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (isConnected && address) {
-      fetchOres()
-      fetchCards()
+      fetchData()
     }
   }, [isConnected, address])
+
+  const fetchData = async () => {
+    setIsLoading(true)
+    await Promise.all([fetchOres(), fetchCards()])
+    setIsLoading(false)
+  }
 
   const fetchOres = async () => {
     try {
       const res = await fetch(`/api/ores/${address}`)
       const data = await res.json()
-      if (data.success && data.ores.length > 0) {
+      if (data.success) {
         setOres(data.ores)
       }
     } catch (error) {
@@ -104,41 +101,33 @@ export default function RefiningPage() {
 
     const timerPromise = new Promise(resolve => setTimeout(resolve, 3000))
 
-    const [result] = await Promise.all([refinePromise, timerPromise])
+    try {
+      const [result] = await Promise.all([refinePromise, timerPromise])
 
-    setIsRefining(false)
+      setIsRefining(false)
 
-    if (result.success) {
-      setNewCard({
-        title: result.card.title,
-        imageUrl: result.card.image_url
-      })
-      setEditableTitle(result.card.title)
-      // 刷新矿石列表
-      fetchOres()
-    } else {
-      // Mock response
-      setNewCard({
-        title: '里程碑达成',
-        imageUrl: 'https://placehold.co/400x600/1a1a2e/8b5cf6?text=Card'
-      })
-      setEditableTitle('里程碑达成')
+      if (result.success) {
+        setNewCard({
+          title: result.card.title,
+          imageUrl: result.card.image_url
+        })
+        setEditableTitle(result.card.title)
+      } else {
+        alert('精炼失败：' + (result.error || '未知错误'))
+        setNewCard(null)
+      }
+    } catch (error) {
+      setIsRefining(false)
+      console.error('Refine error:', error)
+      alert('精炼请求失败')
     }
   }
 
-  const handleSaveCard = async () => {
+  const handleSaveCard = () => {
     if (!newCard) return
 
-    // 将新卡片添加到列表
-    setCards([...cards, {
-      id: `card_${Date.now()}`,
-      title: editableTitle,
-      image_url: newCard.imageUrl,
-      created_at: new Date().toISOString()
-    }])
-
-    // 移除已消耗的矿石
-    setOres(ores.filter(ore => !selectedOres.includes(ore.id)))
+    // 刷新数据
+    fetchData()
     setSelectedOres([])
     setNewCard(null)
   }
@@ -162,6 +151,15 @@ export default function RefiningPage() {
           <h2 className="text-2xl font-bold text-white">请先连接钱包</h2>
           <p className="text-gray-400">连接钱包后即可开始精炼矿石</p>
         </motion.div>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-4xl animate-spin">⚙️</div>
+        <p className="text-gray-400 mt-4">加载中...</p>
       </div>
     )
   }
@@ -200,21 +198,9 @@ export default function RefiningPage() {
                 <motion.div
                   key={i}
                   className="absolute w-4 h-4 bg-purple-500/50 rounded-full"
-                  initial={{
-                    x: 128,
-                    y: 180,
-                    opacity: 0.8
-                  }}
-                  animate={{
-                    x: 128 + (Math.random() - 0.5) * 80,
-                    y: 60,
-                    opacity: 0
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.4
-                  }}
+                  initial={{ x: 128, y: 180, opacity: 0.8 }}
+                  animate={{ x: 128 + (Math.random() - 0.5) * 80, y: 60, opacity: 0 }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
                 />
               ))}
             </motion.div>
@@ -223,21 +209,21 @@ export default function RefiningPage() {
               点击大锅，开始精炼矿石
             </p>
 
+            {/* 矿石数量提示 */}
+            <div className="glass rounded-xl p-4 inline-block">
+              <p className="text-gray-300">
+                你有 <span className="text-purple-400 font-bold">{ores.length}</span> 块矿石可用
+              </p>
+            </div>
+
             {/* 已有卡片 */}
             {cards.length > 0 && (
               <div className="mt-8">
-                <h3 className="text-lg font-semibold text-white mb-4">我的卡片</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">我的卡片 ({cards.length})</h3>
                 <div className="flex overflow-x-auto space-x-4 pb-4">
                   {cards.map((card) => (
-                    <div
-                      key={card.id}
-                      className="flex-shrink-0 w-32 card-dark rounded-xl overflow-hidden"
-                    >
-                      <img
-                        src={card.image_url}
-                        alt={card.title}
-                        className="w-full aspect-[3/4] object-cover"
-                      />
+                    <div key={card.id} className="flex-shrink-0 w-32 card-dark rounded-xl overflow-hidden">
+                      <img src={card.image_url} alt={card.title} className="w-full aspect-[3/4] object-cover" />
                       <div className="p-2">
                         <p className="text-xs text-gray-300 truncate">{card.title}</p>
                       </div>
@@ -260,10 +246,7 @@ export default function RefiningPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">炼金橱柜</h2>
-              <button
-                onClick={handleReset}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
+              <button onClick={handleReset} className="text-gray-400 hover:text-white transition-colors">
                 ✕
               </button>
             </div>
@@ -333,41 +316,23 @@ export default function RefiningPage() {
             className="text-center space-y-8"
           >
             <div className="relative w-64 h-64 mx-auto">
-              {/* 大锅 */}
               <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
+                animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 <span className="text-9xl">🧪</span>
               </motion.div>
-
-              {/* 火星 */}
               {[...Array(12)].map((_, i) => (
                 <motion.div
                   key={i}
                   className="absolute w-3 h-3 bg-yellow-400 rounded-full"
-                  initial={{
-                    x: 128,
-                    y: 200,
-                    opacity: 1
-                  }}
-                  animate={{
-                    x: 128 + (Math.random() - 0.5) * 200,
-                    y: 40 + Math.random() * 100,
-                    opacity: 0
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    repeat: Infinity,
-                    delay: i * 0.05
-                  }}
+                  initial={{ x: 128, y: 200, opacity: 1 }}
+                  animate={{ x: 128 + (Math.random() - 0.5) * 200, y: 40 + Math.random() * 100, opacity: 0 }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.05 }}
                 />
               ))}
             </div>
-
             <motion.p
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity }}
@@ -391,8 +356,6 @@ export default function RefiningPage() {
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gradient">精炼成功！</h2>
             </div>
-
-            {/* 卡片 */}
             <motion.div
               animate={{
                 boxShadow: [
@@ -404,11 +367,7 @@ export default function RefiningPage() {
               transition={{ duration: 2, repeat: Infinity }}
               className="card-dark rounded-2xl overflow-hidden mb-6"
             >
-              <img
-                src={newCard.imageUrl}
-                alt="New Card"
-                className="w-full aspect-[3/4] object-cover"
-              />
+              <img src={newCard.imageUrl} alt="New Card" className="w-full aspect-[3/4] object-cover" />
               <div className="p-4">
                 <input
                   type="text"
@@ -418,7 +377,6 @@ export default function RefiningPage() {
                 />
               </div>
             </motion.div>
-
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

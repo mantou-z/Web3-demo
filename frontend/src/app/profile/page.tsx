@@ -19,7 +19,7 @@ interface Medal {
   created_at: string
 }
 
-// Mock data
+// 默认维度（用户可以自定义）
 const defaultDimensions: Dimension[] = [
   { name: '智慧', score: 30 },
   { name: '意志', score: 30 },
@@ -29,45 +29,31 @@ const defaultDimensions: Dimension[] = [
   { name: '韧性', score: 30 },
 ]
 
-const mockMedals: Medal[] = [
-  {
-    id: 'medal_1',
-    title: 'Web3探险家',
-    description: '历经30天Solidity学习，完成5个里程碑',
-    image_url: 'https://placehold.co/400x400/1a1a2e/gold?text=Medal1',
-    token_id: 1,
-    parent_ids: ['card_1', 'card_2'],
-    created_at: '2026-03-30'
-  },
-  {
-    id: 'medal_2',
-    title: '意志守护者',
-    description: '连续健身60天，铸就钢铁之躯',
-    image_url: 'https://placehold.co/400x400/1a1a2e/ef4444?text=Medal2',
-    token_id: 2,
-    parent_ids: ['card_3'],
-    created_at: '2026-03-25'
-  },
-]
-
 export default function ProfilePage() {
   const { isConnected, address } = useAccount()
   const [dimensions, setDimensions] = useState<Dimension[]>(defaultDimensions)
-  const [medals, setMedals] = useState<Medal[]>(mockMedals)
+  const [medals, setMedals] = useState<Medal[]>([])
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (isConnected && address) {
-      fetchMedals()
+      fetchData()
     }
   }, [isConnected, address])
+
+  const fetchData = async () => {
+    setIsLoading(true)
+    await fetchMedals()
+    setIsLoading(false)
+  }
 
   const fetchMedals = async () => {
     try {
       const res = await fetch(`/api/medals/${address}`)
       const data = await res.json()
-      if (data.success && data.medals.length > 0) {
+      if (data.success) {
         setMedals(data.medals)
       }
     } catch (error) {
@@ -122,11 +108,7 @@ export default function ProfilePage() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           <div className="text-6xl mb-6 animate-float">🔮</div>
           <h2 className="text-2xl font-bold text-white">请先连接钱包</h2>
           <p className="text-gray-400">连接钱包后即可查看灵魂画像</p>
@@ -135,14 +117,19 @@ export default function ProfilePage() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-4xl animate-spin">⚙️</div>
+        <p className="text-gray-400 mt-4">加载中...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
         <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl">
           🔮
         </div>
@@ -153,18 +140,10 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* 雷达图区域 */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="card-dark rounded-2xl p-6 mb-8"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card-dark rounded-2xl p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">灵魂雷达</h2>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
-          >
+          <button onClick={() => setIsEditing(!isEditing)} className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
             {isEditing ? '完成' : '编辑'}
           </button>
         </div>
@@ -173,31 +152,12 @@ export default function ProfilePage() {
           {/* 雷达图 */}
           <div className="w-full md:w-1/2">
             <svg viewBox="0 0 300 300" className="w-full">
-              {/* 背景网格 */}
               {getGridPolygons().map((points, i) => (
-                <polygon
-                  key={i}
-                  points={points}
-                  fill="none"
-                  stroke="rgba(139, 92, 246, 0.1)"
-                  strokeWidth="1"
-                />
+                <polygon key={i} points={points} fill="none" stroke="rgba(139, 92, 246, 0.1)" strokeWidth="1" />
               ))}
-
-              {/* 连接线 */}
               {radarPoints.map((point, i) => (
-                <line
-                  key={i}
-                  x1="150"
-                  y1="150"
-                  x2={point.x}
-                  y2={point.y}
-                  stroke="rgba(139, 92, 246, 0.2)"
-                  strokeWidth="1"
-                />
+                <line key={i} x1="150" y1="150" x2={point.x} y2={point.y} stroke="rgba(139, 92, 246, 0.2)" strokeWidth="1" />
               ))}
-
-              {/* 数据多边形 */}
               <motion.polygon
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -207,32 +167,11 @@ export default function ProfilePage() {
                 stroke="rgba(139, 92, 246, 0.8)"
                 strokeWidth="2"
               />
-
-              {/* 数据点 */}
               {radarPoints.map((point, i) => (
-                <motion.circle
-                  key={i}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 * i }}
-                  cx={point.x}
-                  cy={point.y}
-                  r="4"
-                  fill="#8B5CF6"
-                />
+                <motion.circle key={i} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 * i }} cx={point.x} cy={point.y} r="4" fill="#8B5CF6" />
               ))}
-
-              {/* 标签 */}
               {dimensions.map((dim, i) => (
-                <text
-                  key={i}
-                  x={radarPoints[i].labelX}
-                  y={radarPoints[i].labelY}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="#9CA3AF"
-                  fontSize="12"
-                >
+                <text key={i} x={radarPoints[i].labelX} y={radarPoints[i].labelY} textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize="12">
                   {dim.name}
                 </text>
               ))}
@@ -272,11 +211,7 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* 勋章墙 */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <h2 className="text-xl font-bold text-white mb-4">灵魂勋章</h2>
 
         {medals.length === 0 ? (
@@ -299,11 +234,7 @@ export default function ProfilePage() {
                 className="card-dark rounded-2xl overflow-hidden cursor-pointer"
               >
                 <div className="aspect-square relative">
-                  <img
-                    src={medal.image_url}
-                    alt={medal.title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={medal.image_url} alt={medal.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-lg font-bold text-white">{medal.title}</h3>
@@ -337,18 +268,12 @@ export default function ProfilePage() {
               <div className="relative w-48 h-48 mx-auto mb-6">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full blur-2xl" />
                 <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-4 border-yellow-500/50">
-                  <img
-                    src={selectedMedal.image_url}
-                    alt={selectedMedal.title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={selectedMedal.image_url} alt={selectedMedal.title} className="w-full h-full object-cover" />
                 </div>
               </div>
 
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gradient-gold mb-2">
-                  {selectedMedal.title}
-                </h2>
+                <h2 className="text-2xl font-bold text-gradient-gold mb-2">{selectedMedal.title}</h2>
                 <p className="text-gray-400">{selectedMedal.description}</p>
               </div>
 
@@ -360,9 +285,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-gray-500">Token ID</span>
-                  <span className="text-gray-300">
-                    {selectedMedal.token_id !== null ? `#${selectedMedal.token_id}` : '未上链'}
-                  </span>
+                  <span className="text-gray-300">{selectedMedal.token_id !== null ? `#${selectedMedal.token_id}` : '未上链'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-700">
                   <span className="text-gray-500">里程碑数量</span>
@@ -370,27 +293,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* 热力图占位 */}
-              <div className="mt-6 p-4 bg-gray-800/50 rounded-xl">
-                <p className="text-xs text-gray-500 mb-2">成长轨迹</p>
-                <div className="grid grid-cols-7 gap-1">
-                  {[...Array(35)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-3 h-3 rounded-sm ${
-                        Math.random() > 0.6
-                          ? 'bg-purple-500'
-                          : 'bg-gray-700'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedMedal(null)}
-                className="w-full mt-6 py-3 rounded-xl bg-gray-800 text-gray-400 hover:text-white transition-colors"
-              >
+              <button onClick={() => setSelectedMedal(null)} className="w-full mt-6 py-3 rounded-xl bg-gray-800 text-gray-400 hover:text-white transition-colors">
                 关闭
               </button>
             </motion.div>
