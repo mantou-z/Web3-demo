@@ -101,8 +101,11 @@ export default function AwakeningPage() {
     setShowCircle(false)
     setIsAwakening(true)
 
+    // 直连后端，绕过 Next.js 代理超时
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:30001'
+
     try {
-      const res = await fetch('/api/medals/awaken', {
+      const res = await fetch(`${backendUrl}/api/medals/awaken`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

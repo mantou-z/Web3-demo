@@ -7,10 +7,11 @@ const apiKey = process.env.OPENAI_API_KEY;
 const apiBaseUrl = process.env.OPENAI_API_BASE_URL;
 const chatModel = process.env.CHAT_MODEL || 'gpt-4o-mini';
 const imageModel = process.env.IMAGE_MODEL || 'dall-e-3';
+const aiTimeout = parseInt(process.env.AI_TIMEOUT) || 120000;
 
 let openai = null;
 if (apiKey) {
-  const config = { apiKey };
+  const config = { apiKey, timeout: aiTimeout };
   if (apiBaseUrl) {
     config.baseURL = apiBaseUrl;
   }

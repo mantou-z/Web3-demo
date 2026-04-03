@@ -89,8 +89,11 @@ export default function RefiningPage() {
     setShowCabinet(false)
     setIsRefining(true)
 
+    // 直连后端，绕过 Next.js 代理超时
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:30001'
+
     // 精炼动画至少3秒
-    const refinePromise = fetch('/api/cards/refine', {
+    const refinePromise = fetch(`${backendUrl}/api/cards/refine`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
