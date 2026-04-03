@@ -8,7 +8,7 @@ import medalRoutes from './routes/medals.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 30001;
 
 app.use(cors());
 app.use(express.json());
