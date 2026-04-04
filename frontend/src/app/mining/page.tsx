@@ -133,6 +133,11 @@ export default function MiningPage() {
     setOres([])
   }
 
+  const getOreAsset = (seed: number) => {
+    const oreAssets = sceneAssets.cards.ores
+    return oreAssets[Math.abs(seed) % oreAssets.length]
+  }
+
   if (!isConnected) {
     return (
       <SceneShell backgroundImage={sceneAssets.mining.background}>
@@ -195,8 +200,8 @@ export default function MiningPage() {
                       const info = dimensionInfo[ore.dimension]
                       return (
                         <div key={ore.id} className="scene-card flex items-start gap-4 p-4">
-                          <div className={`mt-1 flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white ${info.gradient}`}>
-                            {info.icon}
+                          <div className="ore-token mt-1 h-14 w-14">
+                            <img src={getOreAsset(ore.id)} alt={info.name} />
                           </div>
                           <div className="flex-1">
                             <div className="mb-2 text-sm font-semibold text-[#9c7430]">{info.name}</div>
@@ -247,8 +252,8 @@ export default function MiningPage() {
                   const info = dimensionInfo[ore.refined_data?.dimension || 'Wisdom']
                   return (
                     <div key={ore.id} className="scene-card p-3 text-center">
-                      <div className={`mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl text-white ${info.gradient}`}>
-                        {info.icon}
+                      <div className="ore-token mx-auto mb-2 h-12 w-12">
+                        <img src={getOreAsset(parseInt(ore.refined_data?.id?.toString() || ore.id, 10) || 0)} alt={info.name} />
                       </div>
                       <div className="line-clamp-2 text-sm font-semibold text-[#5a4127]">{ore.refined_data?.text || '未命名矿石'}</div>
                       <div className="mt-2 text-xs text-[#9d7b45]">{ore.created_at?.split('T')[0]}</div>

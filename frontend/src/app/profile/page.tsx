@@ -31,6 +31,18 @@ const defaultDimensions: Dimension[] = [
   { name: '韧性', score: 30 },
 ]
 
+const medalSlots = [
+  { left: '17%', top: '14%' },
+  { left: '41%', top: '9%' },
+  { left: '65%', top: '14%' },
+  { left: '15%', top: '39%' },
+  { left: '41%', top: '34%' },
+  { left: '67%', top: '39%' },
+  { left: '19%', top: '64%' },
+  { left: '41%', top: '60%' },
+  { left: '63%', top: '64%' },
+]
+
 export default function ProfilePage() {
   const { isConnected, address } = useAccount()
   const [dimensions, setDimensions] = useState<Dimension[]>(defaultDimensions)
@@ -65,7 +77,7 @@ export default function ProfilePage() {
   const getRadarPoints = () => {
     const centerX = 150
     const centerY = 150
-    const maxRadius = 120
+    const maxRadius = 108
 
     return dimensions.map((dim, i) => {
       const angle = (Math.PI * 2 * i) / dimensions.length - Math.PI / 2
@@ -87,7 +99,7 @@ export default function ProfilePage() {
     const levels = [0.2, 0.4, 0.6, 0.8, 1]
     const centerX = 150
     const centerY = 150
-    const maxRadius = 120
+    const maxRadius = 108
 
     return levels.map((level) =>
       dimensions
@@ -138,15 +150,15 @@ export default function ProfilePage() {
               <div className="scene-badge">{medals.length} medals</div>
             </div>
 
-            <div className="relative mx-auto max-w-[560px]">
+            <div className="relative mx-auto max-w-[600px]">
               <img
                 src={sceneAssets.profile.wall}
                 alt="Medal Wall"
-                className="w-full opacity-95 drop-shadow-[0_18px_32px_rgba(126,86,41,0.18)]"
+                className="w-full opacity-100 drop-shadow-[0_20px_34px_rgba(126,86,41,0.16)]"
               />
 
-              <div className="absolute inset-x-[13%] inset-y-[10%] grid grid-cols-3 gap-4 md:gap-6">
-                {Array.from({ length: 9 }).map((_, index) => {
+              <div className="absolute inset-0">
+                {medalSlots.map((slot, index) => {
                   const medal = medals[index]
 
                   return (
@@ -154,16 +166,18 @@ export default function ProfilePage() {
                       key={index}
                       type="button"
                       onClick={() => medal && setSelectedMedal(medal)}
-                      className="flex items-center justify-center bg-transparent p-1"
+                      className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-transparent p-1"
+                      style={{ left: slot.left, top: slot.top }}
                     >
                       {medal ? (
                         <img
                           src={medal.image_url}
                           alt={medal.title}
-                          className="h-24 w-24 rounded-full object-cover shadow-[0_14px_24px_rgba(130,93,43,0.22)] md:h-28 md:w-28"
+                          className="h-24 w-24 rounded-full object-cover shadow-[0_10px_18px_rgba(92,63,28,0.18)] ring-1 ring-[#b9893d]/15 md:h-28 md:w-28"
+                          style={{ mixBlendMode: 'multiply' }}
                         />
                       ) : (
-                        <div className="h-24 w-24 rounded-full border border-dashed border-[#d1b57c]/40 md:h-28 md:w-28" />
+                        <div className="h-24 w-24 rounded-full border border-dashed border-[#d1b57c]/22 md:h-28 md:w-28" />
                       )}
                     </button>
                   )
@@ -191,7 +205,7 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              <svg viewBox="0 0 300 300" className="mx-auto w-full max-w-[320px]">
+              <svg viewBox="0 0 300 300" className="mx-auto w-full max-w-[260px]">
                 {getGridPolygons().map((points, index) => (
                   <polygon
                     key={index}

@@ -134,6 +134,12 @@ export default function RefiningPage() {
     setNewCard(null)
   }
 
+  const getOreAsset = (seed: string) => {
+    const oreAssets = sceneAssets.cards.ores
+    const normalized = Array.from(seed).reduce((sum, char) => sum + char.charCodeAt(0), 0)
+    return oreAssets[normalized % oreAssets.length]
+  }
+
   if (!isConnected) {
     return (
       <SceneShell>
@@ -251,8 +257,8 @@ export default function RefiningPage() {
                       const info = dimensionInfo[ore.refined_data?.dimension || 'Wisdom']
                       return (
                         <button key={ore.id} onClick={() => handleSelectOre(ore.id)} className={`scene-card p-4 text-left transition-all ${isSelected ? 'ring-2 ring-[#d2a74f] bg-[#fff6dd]' : ''}`}>
-                          <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl text-white ${info.gradient}`}>
-                            {info.icon}
+                          <div className="ore-token mb-3 h-14 w-14">
+                            <img src={getOreAsset(ore.id)} alt={info.name} />
                           </div>
                           <div className="line-clamp-3 text-sm font-semibold text-[#5a4127]">{ore.refined_data?.text || '未命名矿石'}</div>
                           <div className="mt-2 text-xs text-[#9d7b45]">{info.name} · {ore.created_at?.split('T')[0]}</div>

@@ -220,8 +220,8 @@ export default function AwakeningPage() {
         <div className="scene-column scene-column--center">
           <AnimatePresence mode="wait">
             {!showCircle && !isAwakening && !newMedal ? (
-              <motion.div key="idle" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl text-center">
-                <div className="relative mx-auto max-w-[460px]">
+              <motion.div key="idle" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[42rem] text-center">
+                <div className="relative mx-auto max-w-[560px]">
                   <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(221,193,105,0.72),transparent_58%)] blur-3xl" />
                   <img src={sceneAssets.awakening.door} alt="Awakening door" className="animate-float relative z-10 w-full" />
                 </div>
@@ -233,8 +233,8 @@ export default function AwakeningPage() {
             ) : null}
 
             {isAwakening ? (
-              <motion.div key="awakening" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-xl text-center">
-                <img src={sceneAssets.awakening.door} alt="Awakening" className="animate-float mx-auto w-full max-w-[420px]" />
+              <motion.div key="awakening" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-[42rem] text-center">
+                <img src={sceneAssets.awakening.door} alt="Awakening" className="animate-float mx-auto w-full max-w-[650px]" />
                 <div className="brand-script mt-6 text-4xl font-bold text-[#7b551f]">Awakening in progress...</div>
                 <p className="mt-3 text-xl text-[#6d5536]">卡牌正在汇聚它们共同指向的身份主题。</p>
               </motion.div>
