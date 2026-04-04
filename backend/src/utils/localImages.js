@@ -13,28 +13,43 @@ const MEDALS_PREFIX = '/images/medals/';
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.svg'];
 
-function getRandomImageFromDirectory(baseDir, basePrefix, category = null) {
+function getImagesFromDirectory(baseDir, basePrefix, category = null) {
   try {
     const targetDir = category ? path.join(baseDir, category) : baseDir;
     const files = fs.readdirSync(targetDir).filter(f =>
       IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase())
-    );
+    ).sort((left, right) => left.localeCompare(right));
 
-    if (files.length === 0) return null;
-
-    const file = files[Math.floor(Math.random() * files.length)];
-    return category
-      ? `${basePrefix}${encodeURIComponent(category)}/${file}`
-      : `${basePrefix}${file}`;
+    return files.map((file) => (
+      category
+        ? `${basePrefix}${encodeURIComponent(category)}/${file}`
+        : `${basePrefix}${file}`
+    ));
   } catch {
-    return null;
+    return [];
   }
 }
 
 export function getRandomCardImage(category = null) {
-  return getRandomImageFromDirectory(CARDS_DIR, CARDS_PREFIX, category);
+  const images = getImagesFromDirectory(CARDS_DIR, CARDS_PREFIX, category);
+  if (images.length === 0) return null;
+  return images[Math.floor(Math.random() * images.length)];
 }
 
 export function getRandomMedalImage(category = null) {
-  return getRandomImageFromDirectory(MEDALS_DIR, MEDALS_PREFIX, category);
+  const images = getImagesFromDirectory(MEDALS_DIR, MEDALS_PREFIX, category);
+  if (images.length === 0) return null;
+  return images[Math.floor(Math.random() * images.length)];
+}
+
+export function getCardImageByIndex(category = null, index = 0) {
+  const images = getImagesFromDirectory(CARDS_DIR, CARDS_PREFIX, category);
+  if (images.length === 0) return null;
+  return images[index % images.length];
+}
+
+export function getMedalImageByIndex(category = null, index = 0) {
+  const images = getImagesFromDirectory(MEDALS_DIR, MEDALS_PREFIX, category);
+  if (images.length === 0) return null;
+  return images[index % images.length];
 }

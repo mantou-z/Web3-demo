@@ -61,6 +61,33 @@ export const db = {
     return mockStorage.users.get(walletAddress);
   },
 
+  async clearUserData(userId) {
+    if (supabase) {
+      await supabase.from('medals').delete().eq('user_id', userId);
+      await supabase.from('cards').delete().eq('user_id', userId);
+      await supabase.from('ores').delete().eq('user_id', userId);
+      return;
+    }
+
+    for (const [id, medal] of mockStorage.medals.entries()) {
+      if (medal.user_id === userId) {
+        mockStorage.medals.delete(id);
+      }
+    }
+
+    for (const [id, card] of mockStorage.cards.entries()) {
+      if (card.user_id === userId) {
+        mockStorage.cards.delete(id);
+      }
+    }
+
+    for (const [id, ore] of mockStorage.ores.entries()) {
+      if (ore.user_id === userId) {
+        mockStorage.ores.delete(id);
+      }
+    }
+  },
+
   // Ore operations
   async createOre(userId, rawData, refinedData) {
     const oreId = nextMockId('ore');
@@ -146,7 +173,8 @@ export const db = {
     }
 
     return Array.from(mockStorage.cards.values())
-      .filter(c => c.user_id === userId && c.status === 'active');
+      .filter(c => c.user_id === userId && c.status === 'active')
+      .sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
   },
 
   async consumeCards(cardIds) {
@@ -217,7 +245,8 @@ export const db = {
     }
 
     return Array.from(mockStorage.medals.values())
-      .filter(m => m.user_id === userId);
+      .filter(m => m.user_id === userId)
+      .sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
   },
 
   async updateMedal(medalId, updates) {

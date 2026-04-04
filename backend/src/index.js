@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import oreRoutes from './routes/ores.js';
 import cardRoutes from './routes/cards.js';
 import medalRoutes from './routes/medals.js';
+import { seedDemoDataIfEnabled } from './services/demoSeed.js';
 
 dotenv.config();
 
@@ -32,11 +33,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'alcheme-backend' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`);
-  console.log(`AI timeout: ${AI_TIMEOUT}ms`);
-});
+async function startServer() {
+  await seedDemoDataIfEnabled();
 
-server.timeout = AI_TIMEOUT;
-server.headersTimeout = AI_TIMEOUT + 10000;
-server.keepAliveTimeout = AI_TIMEOUT + 10000;
+  const server = app.listen(PORT, () => {
+    console.log(`Backend server running on port ${PORT}`);
+    console.log(`AI timeout: ${AI_TIMEOUT}ms`);
+    if (process.env.LOAD_DEMO_DATA === 'true') {
+      console.log(`Demo seed enabled for wallet: ${process.env.DEMO_WALLET_ADDRESS || '0xDemo000000000000000000000000000000000001'}`);
+    }
+  });
+
+  server.timeout = AI_TIMEOUT;
+  server.headersTimeout = AI_TIMEOUT + 10000;
+  server.keepAliveTimeout = AI_TIMEOUT + 10000;
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start backend:', error);
+  process.exit(1);
+});
