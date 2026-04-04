@@ -1,9 +1,13 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAccount } from 'wagmi'
 import { useMintMedal } from '@/hooks/useContracts'
+import { GoldButton } from '@/components/scene/GoldButton'
+import { ParchmentPanel } from '@/components/scene/ParchmentPanel'
+import { SceneShell } from '@/components/scene/SceneShell'
+import { sceneAssets } from '@/components/scene/assets'
 
 interface Card {
   id: string
@@ -33,7 +37,6 @@ export default function AwakeningPage() {
   const [newMedal, setNewMedal] = useState<{ id: string; title: string; description: string; imageUrl: string } | null>(null)
   const [editableMedalTitle, setEditableMedalTitle] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed, receipt } = useMintMedal()
 
@@ -44,9 +47,7 @@ export default function AwakeningPage() {
   }, [isConnected, address])
 
   const fetchData = async () => {
-    setIsLoading(true)
     await Promise.all([fetchCards(), fetchMedals()])
-    setIsLoading(false)
   }
 
   const fetchCards = async () => {
@@ -75,7 +76,7 @@ export default function AwakeningPage() {
 
   const handleSelectCard = (cardId: string) => {
     if (selectedCards.includes(cardId)) {
-      setSelectedCards(selectedCards.filter(id => id !== cardId))
+      setSelectedCards(selectedCards.filter((id) => id !== cardId))
     } else {
       setSelectedCards([...selectedCards, cardId])
     }
@@ -88,7 +89,7 @@ export default function AwakeningPage() {
 
   const validateSelection = (): boolean => {
     if (selectedCards.length === 0) {
-      setError('缺少灵光！请放入里程碑卡片')
+      setError('请至少选择一张卡牌参与觉醒。')
       return false
     }
     setError(null)
@@ -101,7 +102,6 @@ export default function AwakeningPage() {
     setShowCircle(false)
     setIsAwakening(true)
 
-    // 直连后端，绕过 Next.js 代理超时
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:30001'
 
     try {
@@ -111,12 +111,11 @@ export default function AwakeningPage() {
         body: JSON.stringify({
           walletAddress: address,
           cardIds: selectedCards,
-          existingMedalId: selectedMedal
-        })
+          existingMedalId: selectedMedal,
+        }),
       })
 
-      // 等待至少3秒的动画
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise((resolve) => setTimeout(resolve, 3000))
 
       const result = await res.json()
       setIsAwakening(false)
@@ -126,7 +125,7 @@ export default function AwakeningPage() {
           id: result.medal.id,
           title: result.medal.title,
           description: result.medal.description,
-          imageUrl: result.medal.image_url
+          imageUrl: result.medal.image_url,
         })
         setEditableMedalTitle(result.medal.title)
       } else {
@@ -142,13 +141,12 @@ export default function AwakeningPage() {
   const handleMintToChain = async () => {
     if (!newMedal) return
 
-    // 如果标题被修改，先保存到后端
     if (editableMedalTitle !== newMedal.title) {
       try {
         await fetch(`/api/medals/${newMedal.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: editableMedalTitle })
+          body: JSON.stringify({ title: editableMedalTitle }),
         })
       } catch (error) {
         console.error('Error saving medal title:', error)
@@ -156,22 +154,16 @@ export default function AwakeningPage() {
     }
 
     try {
-      mintMedal(
-        newMedal.imageUrl,
-        editableMedalTitle,
-        newMedal.description
-      )
+      mintMedal(newMedal.imageUrl, editableMedalTitle, newMedal.description)
     } catch (error) {
       console.error('Mint error:', error)
       alert('上链失败')
     }
   }
 
-  // 监听铸造成功
   useEffect(() => {
     if (mintConfirmed && receipt && newMedal) {
-      // 从日志中解析 MedalMinted 事件获取真实 tokenId
-      const medalMintedEvent = receipt.logs.find(log => {
+      const medalMintedEvent = receipt.logs.find((log) => {
         return log.topics[0] === '0xdccdb8897eec6a644b93d2ff2b1d5a7fee4603857d745585ad971dfcd0ccd299'
       })
 
@@ -181,7 +173,7 @@ export default function AwakeningPage() {
         fetch(`/api/medals/${newMedal.id}/mint`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tokenId: realTokenId.toString() })
+          body: JSON.stringify({ tokenId: realTokenId.toString() }),
         }).then(() => {
           fetchData()
           setSelectedCards([])
@@ -190,7 +182,7 @@ export default function AwakeningPage() {
         })
       }
     }
-  }, [mintConfirmed, receipt])
+  }, [mintConfirmed, receipt, newMedal])
 
   const handleReset = () => {
     setSelectedCards([])
@@ -203,230 +195,160 @@ export default function AwakeningPage() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="text-6xl mb-6 animate-float">✨</div>
-          <h2 className="text-2xl font-bold text-white">请先连接钱包</h2>
-          <p className="text-gray-400">连接钱包后即可开始觉醒</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-4xl animate-spin">⚙️</div>
-        <p className="text-gray-400 mt-4">加载中...</p>
-      </div>
+      <SceneShell>
+        <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center">
+          <ParchmentPanel className="max-w-xl p-10 text-center">
+            <h2 className="brand-script text-4xl font-bold text-[#6f4a1d]">Connect to Awaken</h2>
+            <p className="mt-4 text-xl text-[#6d5536]">连接钱包后，才能将卡牌合成为勋章并上链。</p>
+          </ParchmentPanel>
+        </div>
+      </SceneShell>
     )
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center">
-      <AnimatePresence mode="wait">
-        {/* 灵光阵主画面 */}
-        {!showCircle && !isAwakening && !newMedal && (
-          <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-8 w-full max-w-lg">
-            <h1 className="text-3xl font-bold text-white">灵光阵</h1>
+    <SceneShell>
+      <div className="scene-grid">
+        <div className="scene-column">
+          <div className="mb-6 max-w-md">
+            <h1 className="scene-hero-title">Awaken Identity</h1>
+            <p className="scene-muted mt-4 text-xl">将卡牌汇聚成更稳定的身份象征，必要时也可以在旧勋章基础上继续进化。</p>
+          </div>
+          <img src={sceneAssets.shared.character} alt="Character" className="mx-auto max-h-[600px] w-auto object-contain" />
+        </div>
 
-            {/* 法阵 */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowCircle(true)}
-              className="cursor-pointer relative w-64 h-64 mx-auto"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full blur-3xl animate-glow-pulse" />
-              <div className="relative z-10 w-full h-full flex items-center justify-center">
-                <div className="w-48 h-48 border-2 border-yellow-500/50 rounded-full flex items-center justify-center rune-glow">
-                  <div className="w-36 h-36 border border-yellow-500/30 rounded-full flex items-center justify-center">
-                    <span className="text-7xl animate-float">⭐</span>
+        <div className="scene-column scene-column--center">
+          <AnimatePresence mode="wait">
+            {!showCircle && !isAwakening && !newMedal ? (
+              <motion.div key="idle" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl text-center">
+                <div className="relative mx-auto max-w-[460px]">
+                  <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(221,193,105,0.72),transparent_58%)] blur-3xl" />
+                  <img src={sceneAssets.awakening.door} alt="Awakening door" className="animate-float relative z-10 w-full" />
+                </div>
+                <div className="mt-8 flex justify-center gap-3">
+                  <GoldButton onClick={() => setShowCircle(true)}>Open the Ritual</GoldButton>
+                </div>
+                <div className="mt-5 text-lg text-[#6d5536]">可用卡牌 {cards.length} 张，已有勋章 {medals.length} 枚。</div>
+              </motion.div>
+            ) : null}
+
+            {isAwakening ? (
+              <motion.div key="awakening" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-xl text-center">
+                <img src={sceneAssets.awakening.door} alt="Awakening" className="animate-float mx-auto w-full max-w-[420px]" />
+                <div className="brand-script mt-6 text-4xl font-bold text-[#7b551f]">Awakening in progress...</div>
+                <p className="mt-3 text-xl text-[#6d5536]">卡牌正在汇聚它们共同指向的身份主题。</p>
+              </motion.div>
+            ) : null}
+
+            {newMedal ? (
+              <motion.div key="medal" initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md">
+                <ParchmentPanel className="p-6 text-center">
+                  <div className="brand-script text-3xl font-bold text-[#70491d]">Medal Revealed</div>
+                  <div className="mx-auto mt-4 flex h-72 w-72 items-center justify-center rounded-full bg-[radial-gradient(circle,rgba(255,233,172,0.78),rgba(255,255,255,0.18))]">
+                    <img src={newMedal.imageUrl} alt="New Medal" className="h-56 w-56 rounded-full object-cover shadow-[0_20px_35px_rgba(119,84,39,0.2)]" />
                   </div>
-                </div>
+                  <input
+                    type="text"
+                    value={editableMedalTitle}
+                    onChange={(e) => setEditableMedalTitle(e.target.value)}
+                    className="scene-input mt-5 text-center"
+                    placeholder="给勋章命名"
+                  />
+                  <p className="mt-4 text-lg text-[#6d5536]">{newMedal.description}</p>
+                  <div className="mt-6 flex justify-center gap-3">
+                    <GoldButton onClick={handleMintToChain} disabled={isMinting}>{isMinting ? 'Minting...' : 'Mint On Chain'}</GoldButton>
+                    <button onClick={handleReset} className="scene-badge">Reset</button>
+                  </div>
+                </ParchmentPanel>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <div className="scene-column items-center">
+          <div className="relative w-full max-w-[440px]">
+            <img src={sceneAssets.shared.owl} alt="Owl" className="absolute right-0 top-[-4rem] h-40 w-auto animate-float md:h-48" />
+            <ParchmentPanel className="px-6 pb-8 pt-16">
+              <div className="mb-4 text-center">
+                <div className="brand-script text-2xl font-bold text-[#78511f]">Honor Archive</div>
+                <p className="scene-muted text-base">每一枚勋章都来自你曾经积累的卡牌与经历。</p>
               </div>
-            </motion.div>
-
-            <p className="text-gray-400">点击法阵，铸就你的灵魂勋章</p>
-
-            {/* 卡片数量提示 */}
-            <div className="glass rounded-xl p-4 inline-block">
-              <p className="text-gray-300">
-                你有 <span className="text-purple-400 font-bold">{cards.length}</span> 张卡片可用
-              </p>
-            </div>
-
-            {/* 已有勋章 */}
-            {medals.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-white mb-4">我的勋章 ({medals.length})</h3>
-                <div className="flex overflow-x-auto space-x-4 pb-4">
-                  {medals.map((medal) => (
-                    <div key={medal.id} className="flex-shrink-0 w-32 card-dark rounded-xl overflow-hidden">
-                      <img src={medal.image_url} alt={medal.title} className="w-full aspect-square object-cover" />
-                      <div className="p-2">
-                        <p className="text-xs text-gray-300 truncate">{medal.title}</p>
-                      </div>
+              <div className="space-y-3">
+                {medals.slice(0, 4).map((medal) => (
+                  <div key={medal.id} className="scene-card flex items-center gap-3 p-3">
+                    <img src={medal.image_url} alt={medal.title} className="h-14 w-14 rounded-full object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-lg font-semibold text-[#5a4127]">{medal.title}</div>
+                      <div className="text-sm text-[#9d7b45]">{medal.created_at?.split('T')[0]}</div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </motion.div>
-        )}
+            </ParchmentPanel>
+          </div>
+        </div>
+      </div>
 
-        {/* 选择界面 */}
-        {showCircle && (
-          <motion.div key="selection" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="w-full max-w-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">选择材料</h2>
-              <button onClick={handleReset} className="text-gray-400 hover:text-white transition-colors">✕</button>
-            </div>
-
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-4">
-                <p className="text-red-400 text-center">⚠️ {error}</p>
-              </motion.div>
-            )}
-
-            {/* 里程碑卡片 */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-white mb-4">里程碑卡片 ({selectedCards.length} 已选)</h3>
-              {cards.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>没有可用的卡片</p>
-                  <p className="text-sm">请先去精炼矿石</p>
+      <AnimatePresence>
+        {showCircle ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(50,35,18,0.45)] px-4 backdrop-blur-md" onClick={handleReset}>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 18 }} className="w-full max-w-6xl" onClick={(event) => event.stopPropagation()}>
+              <ParchmentPanel className="p-8">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="brand-script text-3xl font-bold text-[#70491d]">Choose Ritual Materials</h2>
+                    <p className="scene-muted text-lg">选择卡牌进行觉醒，也可以额外指定一枚已有勋章作为进化基础。</p>
+                  </div>
+                  <button onClick={handleReset} className="scene-badge">Close</button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-4 max-h-48 overflow-y-auto">
-                  {cards.map((card, index) => {
-                    const isSelected = selectedCards.includes(card.id)
-                    return (
-                      <motion.div
-                        key={card.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleSelectCard(card.id)}
-                        className={`card-dark rounded-xl overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-2 ring-purple-500' : ''}`}
-                      >
-                        <img src={card.image_url} alt={card.title} className="w-full aspect-[3/4] object-cover" />
-                        <div className="p-2">
-                          <p className="text-xs text-gray-300 truncate">{card.title}</p>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
+
+                {error ? <div className="mb-4 rounded-2xl bg-red-100 px-4 py-3 text-center text-red-700">{error}</div> : null}
+
+                <div className="mb-8">
+                  <h3 className="mb-4 text-2xl font-bold text-[#5b3b1d]">Cards</h3>
+                  {cards.length === 0 ? (
+                    <div className="py-8 text-center text-lg text-[#7e6033]">暂无可用卡牌，请先去精炼页面生成卡牌。</div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                      {cards.map((card) => {
+                        const isSelected = selectedCards.includes(card.id)
+                        return (
+                          <button key={card.id} onClick={() => handleSelectCard(card.id)} className={`scene-card overflow-hidden p-3 text-left transition-all ${isSelected ? 'ring-2 ring-[#d2a74f] bg-[#fff6dd]' : ''}`}>
+                            <img src={card.image_url} alt={card.title} className="h-48 w-full rounded-[1.1rem] object-cover" />
+                            <div className="mt-3 text-base font-semibold text-[#5a4127]">{card.title}</div>
+                            <div className="text-sm text-[#9d7b45]">{card.created_at?.split('T')[0]}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* 已有勋章（用于进化） */}
-            {medals.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">已有勋章（可选，用于进化）</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  {medals.map((medal, index) => {
-                    const isSelected = selectedMedal === medal.id
-                    return (
-                      <motion.div
-                        key={medal.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleSelectMedal(medal.id)}
-                        className={`card-dark rounded-xl overflow-hidden cursor-pointer transition-all ${isSelected ? 'ring-2 ring-yellow-500' : ''}`}
-                      >
-                        <img src={medal.image_url} alt={medal.title} className="w-full aspect-square object-cover" />
-                        <div className="p-2">
-                          <p className="text-xs text-gray-300 truncate">{medal.title}</p>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
+                {medals.length > 0 ? (
+                  <div>
+                    <h3 className="mb-4 text-2xl font-bold text-[#5b3b1d]">Existing Medals</h3>
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                      {medals.map((medal) => {
+                        const isSelected = selectedMedal === medal.id
+                        return (
+                          <button key={medal.id} onClick={() => handleSelectMedal(medal.id)} className={`scene-card p-4 text-center transition-all ${isSelected ? 'ring-2 ring-[#d2a74f] bg-[#fff6dd]' : ''}`}>
+                            <img src={medal.image_url} alt={medal.title} className="mx-auto h-28 w-28 rounded-full object-cover" />
+                            <div className="mt-3 text-base font-semibold text-[#5a4127]">{medal.title}</div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="mt-6 flex justify-center gap-3">
+                  <GoldButton onClick={handleAwaken} disabled={selectedCards.length === 0}>{selectedMedal ? 'Evolve Medal' : 'Awaken Medal'}</GoldButton>
                 </div>
-              </div>
-            )}
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleAwaken}
-              disabled={selectedCards.length === 0}
-              className="btn-gold w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {selectedMedal ? '进化' : '觉醒'} ✨
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* 觉醒动画 */}
-        {isAwakening && (
-          <motion.div key="awakening" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-8">
-            <div className="relative w-64 h-64 mx-auto">
-              <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.8, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute inset-0 bg-gradient-to-br from-yellow-500/50 to-orange-500/50 rounded-full blur-2xl" />
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border-2 border-yellow-500/70 rounded-full" />
-              </motion.div>
-              <motion.div animate={{ rotate: -360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 border border-yellow-500/50 rounded-full" />
-              </motion.div>
-              <motion.div animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.8, repeat: Infinity }} className="absolute inset-0 flex items-center justify-center">
-                <span className="text-6xl">⭐</span>
-              </motion.div>
-            </div>
-            <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-gray-400 text-lg">
-              {selectedMedal ? '进化中...' : '觉醒中...'}
-            </motion.p>
-          </motion.div>
-        )}
-
-        {/* 勋章显现 */}
-        {newMedal && (
-          <motion.div key="medal" initial={{ opacity: 0, scale: 0.3 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.3 }} transition={{ type: 'spring', duration: 1 }} className="w-full max-w-sm">
-            <div className="text-center mb-6">
-              <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-3xl font-bold text-gradient-gold">
-                {selectedMedal ? '进化成功！' : '觉醒成功！'}
-              </motion.h2>
-            </div>
-
-            <motion.div
-              animate={{ boxShadow: ['0 0 30px rgba(251, 191, 36, 0.3)', '0 0 60px rgba(251, 191, 36, 0.6)', '0 0 30px rgba(251, 191, 36, 0.3)'] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="relative w-64 h-64 mx-auto mb-6"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full blur-2xl" />
-              <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-4 border-yellow-500/50">
-                <img src={newMedal.imageUrl} alt="New Medal" className="w-full h-full object-cover" />
-              </div>
+              </ParchmentPanel>
             </motion.div>
-
-            <div className="text-center mb-6">
-              <input
-                type="text"
-                value={editableMedalTitle}
-                onChange={(e) => setEditableMedalTitle(e.target.value)}
-                className="w-full bg-transparent text-center text-2xl font-bold text-white border-b border-yellow-500/50 focus:outline-none focus:border-yellow-500 mb-2"
-              />
-              <p className="text-gray-400">{newMedal.description}</p>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleMintToChain}
-              disabled={isMinting}
-              className="btn-gold w-full py-4 disabled:opacity-50"
-            >
-              {isMinting ? '上链中...' : '铸造上链 ⛓️'}
-            </motion.button>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
-    </div>
+    </SceneShell>
   )
 }

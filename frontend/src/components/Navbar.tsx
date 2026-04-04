@@ -3,138 +3,115 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { sceneAssets } from '@/components/scene/assets'
 
 const navItems = [
-  { href: '/mining', label: '采集', icon: '⛏️' },
-  { href: '/refining', label: '精炼', icon: '⚗️' },
-  { href: '/awakening', label: '觉醒', icon: '✨' },
-  { href: '/profile', label: '灵魂', icon: '🔮' },
+  { href: '/mining', label: 'Collect', icon: sceneAssets.nav.collect },
+  { href: '/refining', label: 'Refine', icon: sceneAssets.nav.refine },
+  { href: '/awakening', label: 'Awaken', icon: sceneAssets.nav.awaken },
+  { href: '/profile', label: 'Profile', icon: sceneAssets.nav.profile },
 ]
 
 export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="glass sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl">🔮</span>
-            <span className="text-xl font-bold text-gradient">
-              Alcheme
-            </span>
-          </Link>
+    <nav className="sticky top-0 z-50 px-4 pt-4">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rounded-[2rem] border border-white/50 bg-white/45 px-4 py-3 shadow-[0_20px_40px_rgba(130,93,43,0.12)] backdrop-blur-xl">
+        <Link href="/" className="flex items-center gap-3">
+          <img src={sceneAssets.nav.logo} alt="Alcheme" className="h-12 w-auto md:h-16" />
+          <div className="hidden md:block">
+            <div className="brand-script text-3xl font-bold text-[#52331a]">Alcheme</div>
+            <div className="text-sm tracking-[0.25em] text-[#a37b35]">Soul Forge</div>
+          </div>
+        </Link>
 
-          <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
+        <div className="flex items-center gap-2 overflow-x-auto px-1 py-1 md:gap-4">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+
+            return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-300 ${
-                  pathname === item.href
-                    ? 'bg-purple-500/20 text-purple-400'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                className={`flex min-w-[84px] flex-col items-center gap-1 rounded-[1.35rem] px-3 py-2 transition-all duration-300 ${
+                  isActive
+                    ? 'bg-[#fff5d8] shadow-[0_10px_20px_rgba(213,168,75,0.25)]'
+                    : 'hover:bg-white/40'
                 }`}
               >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
-
-          <ConnectButton.Custom>
-            {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
-              const ready = mounted
-              const connected = ready && account && chain
-
-              return (
-                <div
-                  {...(!ready && {
-                    'aria-hidden': true,
-                    style: {
-                      opacity: 0,
-                      pointerEvents: 'none',
-                      userSelect: 'none',
-                    },
-                  })}
-                >
-                  {(() => {
-                    if (!connected) {
-                      return (
-                        <button onClick={openConnectModal} className="btn-magical">
-                          连接钱包
-                        </button>
-                      )
-                    }
-
-                    if (chain.unsupported) {
-                      return (
-                        <button onClick={openChainModal} className="btn-magical bg-red-500">
-                          错误网络
-                        </button>
-                      )
-                    }
-
-                    return (
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={openChainModal}
-                          className="glass px-3 py-2 rounded-lg flex items-center space-x-2"
-                        >
-                          {chain.hasIcon && (
-                            <div className="w-5 h-5 rounded-full overflow-hidden">
-                              {chain.iconUrl && (
-                                <img
-                                  alt={chain.name ?? 'Chain icon'}
-                                  src={chain.iconUrl}
-                                  className="w-5 h-5"
-                                />
-                              )}
-                            </div>
-                          )}
-                          <span className="text-sm text-gray-300">{chain.name}</span>
-                        </button>
-
-                        <button
-                          onClick={openAccountModal}
-                          className="glass px-4 py-2 rounded-lg flex items-center space-x-2"
-                        >
-                          <span className="text-sm text-gray-300">
-                            {account.displayName}
-                          </span>
-                          <span className="text-xs text-purple-400">
-                            {account.displayBalance}
-                          </span>
-                        </button>
-                      </div>
-                    )
-                  })()}
+                <div className={`rounded-[1rem] p-1.5 ${isActive ? 'bg-white/60' : ''}`}>
+                  <img src={item.icon} alt={item.label} className="h-11 w-11 object-contain md:h-14 md:w-14" />
                 </div>
-              )
-            }}
-          </ConnectButton.Custom>
+                <span className="brand-script text-sm font-semibold text-[#5b3b1d]">{item.label}</span>
+              </Link>
+            )
+          })}
         </div>
-      </div>
 
-      {/* 移动端底部导航 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 glass z-50">
-        <div className="flex justify-around py-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center py-2 px-4 rounded-lg transition-all ${
-                pathname === item.href
-                  ? 'text-purple-400'
-                  : 'text-gray-500'
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span className="text-xs mt-1">{item.label}</span>
-            </Link>
-          ))}
-        </div>
+        <ConnectButton.Custom>
+          {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
+            const ready = mounted
+            const connected = ready && account && chain
+
+            return (
+              <div
+                {...(!ready && {
+                  'aria-hidden': true,
+                  style: {
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                  },
+                })}
+              >
+                {(() => {
+                  if (!connected) {
+                    return (
+                      <button onClick={openConnectModal} className="gold-button px-4 py-3 text-sm">
+                        Connect
+                      </button>
+                    )
+                  }
+
+                  if (chain.unsupported) {
+                    return (
+                      <button onClick={openChainModal} className="rounded-full border border-red-300 bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
+                        Wrong network
+                      </button>
+                    )
+                  }
+
+                  return (
+                    <div className="hidden items-center gap-2 md:flex">
+                      <button
+                        onClick={openChainModal}
+                        className="glass-soft flex items-center gap-2 rounded-full px-3 py-2"
+                      >
+                        {chain.hasIcon && chain.iconUrl ? (
+                          <img
+                            alt={chain.name ?? 'Chain'}
+                            src={chain.iconUrl}
+                            className="h-5 w-5 rounded-full"
+                          />
+                        ) : null}
+                        <span className="text-sm font-semibold text-[#6c532f]">{chain.name}</span>
+                      </button>
+
+                      <button
+                        onClick={openAccountModal}
+                        className="parchment-panel flex items-center gap-2 rounded-full px-4 py-2"
+                      >
+                        <span className="text-sm font-semibold text-[#5b3b1d]">{account.displayName}</span>
+                        <span className="text-xs text-[#a37b35]">{account.displayBalance}</span>
+                      </button>
+                    </div>
+                  )
+                })()}
+              </div>
+            )
+          }}
+        </ConnectButton.Custom>
       </div>
     </nav>
   )

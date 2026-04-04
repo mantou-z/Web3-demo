@@ -1,8 +1,12 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAccount } from 'wagmi'
+import { GoldButton } from '@/components/scene/GoldButton'
+import { ParchmentPanel } from '@/components/scene/ParchmentPanel'
+import { SceneShell } from '@/components/scene/SceneShell'
+import { sceneAssets } from '@/components/scene/assets'
 
 interface Ore {
   id: string
@@ -22,11 +26,11 @@ interface Card {
 }
 
 const dimensionInfo = {
-  Wisdom: { name: '智慧', icon: '💎', gradient: 'ore-gradient-wisdom' },
-  Will: { name: '意志', icon: '🔥', gradient: 'ore-gradient-will' },
-  Creation: { name: '创造', icon: '✨', gradient: 'ore-gradient-creation' },
-  Connection: { name: '连接', icon: '🌿', gradient: 'ore-gradient-connection' },
-}
+  Wisdom: { name: '智慧', icon: 'W', gradient: 'ore-gradient-wisdom' },
+  Will: { name: '意志', icon: 'I', gradient: 'ore-gradient-will' },
+  Creation: { name: '创造', icon: 'C', gradient: 'ore-gradient-creation' },
+  Connection: { name: '连接', icon: 'N', gradient: 'ore-gradient-connection' },
+} as const
 
 export default function RefiningPage() {
   const { isConnected, address } = useAccount()
@@ -37,7 +41,6 @@ export default function RefiningPage() {
   const [isRefining, setIsRefining] = useState(false)
   const [newCard, setNewCard] = useState<{ id: string; title: string; imageUrl: string } | null>(null)
   const [editableTitle, setEditableTitle] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (isConnected && address) {
@@ -46,18 +49,14 @@ export default function RefiningPage() {
   }, [isConnected, address])
 
   const fetchData = async () => {
-    setIsLoading(true)
     await Promise.all([fetchOres(), fetchCards()])
-    setIsLoading(false)
   }
 
   const fetchOres = async () => {
     try {
       const res = await fetch(`/api/ores/${address}`)
       const data = await res.json()
-      if (data.success) {
-        setOres(data.ores)
-      }
+      if (data.success) setOres(data.ores)
     } catch (error) {
       console.error('Error fetching ores:', error)
     }
@@ -67,20 +66,14 @@ export default function RefiningPage() {
     try {
       const res = await fetch(`/api/cards/${address}`)
       const data = await res.json()
-      if (data.success) {
-        setCards(data.cards)
-      }
+      if (data.success) setCards(data.cards)
     } catch (error) {
       console.error('Error fetching cards:', error)
     }
   }
 
   const handleSelectOre = (oreId: string) => {
-    if (selectedOres.includes(oreId)) {
-      setSelectedOres(selectedOres.filter(id => id !== oreId))
-    } else {
-      setSelectedOres([...selectedOres, oreId])
-    }
+    setSelectedOres((current) => (current.includes(oreId) ? current.filter((id) => id !== oreId) : [...current, oreId]))
   }
 
   const handleRefine = async () => {
@@ -89,36 +82,23 @@ export default function RefiningPage() {
     setShowCabinet(false)
     setIsRefining(true)
 
-    // 直连后端，绕过 Next.js 代理超时
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:30001'
-
-    // 精炼动画至少3秒
     const refinePromise = fetch(`${backendUrl}/api/cards/refine`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        walletAddress: address,
-        oreIds: selectedOres
-      })
-    }).then(res => res.json())
+      body: JSON.stringify({ walletAddress: address, oreIds: selectedOres }),
+    }).then((res) => res.json())
 
-    const timerPromise = new Promise(resolve => setTimeout(resolve, 3000))
+    const timerPromise = new Promise((resolve) => setTimeout(resolve, 3000))
 
     try {
       const [result] = await Promise.all([refinePromise, timerPromise])
-
       setIsRefining(false)
-
       if (result.success) {
-        setNewCard({
-          id: result.card.id,
-          title: result.card.title,
-          imageUrl: result.card.image_url
-        })
+        setNewCard({ id: result.card.id, title: result.card.title, imageUrl: result.card.image_url })
         setEditableTitle(result.card.title)
       } else {
-        alert('精炼失败：' + (result.error || '未知错误'))
-        setNewCard(null)
+        alert(`精炼失败：${result.error || '未知错误'}`)
       }
     } catch (error) {
       setIsRefining(false)
@@ -130,20 +110,18 @@ export default function RefiningPage() {
   const handleSaveCard = async () => {
     if (!newCard) return
 
-    // 如果标题被修改，保存到后端
     if (editableTitle !== newCard.title) {
       try {
         await fetch(`/api/cards/${newCard.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: editableTitle })
+          body: JSON.stringify({ title: editableTitle }),
         })
       } catch (error) {
         console.error('Error saving card title:', error)
       }
     }
 
-    // 刷新数据
     fetchData()
     setSelectedOres([])
     setNewCard(null)
@@ -158,253 +136,140 @@ export default function RefiningPage() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
-          <div className="text-6xl mb-6 animate-float">⚗️</div>
-          <h2 className="text-2xl font-bold text-white">请先连接钱包</h2>
-          <p className="text-gray-400">连接钱包后即可开始精炼矿石</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-4xl animate-spin">⚙️</div>
-        <p className="text-gray-400 mt-4">加载中...</p>
-      </div>
+      <SceneShell>
+        <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center">
+          <ParchmentPanel className="max-w-xl p-10 text-center">
+            <h2 className="brand-script text-4xl font-bold text-[#6f4a1d]">Connect to Enter the Lab</h2>
+            <p className="mt-4 text-xl text-[#6d5536]">连接钱包后，才能把矿石投入炼金锅并生成卡牌。</p>
+          </ParchmentPanel>
+        </div>
+      </SceneShell>
     )
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center">
-      <AnimatePresence mode="wait">
-        {/* 大锅主画面 */}
-        {!showCabinet && !isRefining && !newCard && (
-          <motion.div
-            key="cauldron"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="text-center space-y-8 w-full max-w-lg"
-          >
-            <h1 className="text-3xl font-bold text-white">炼金实验室</h1>
+    <SceneShell>
+      <div className="scene-grid">
+        <div className="scene-column">
+          <div className="mb-6 max-w-md">
+            <h1 className="scene-hero-title">Refine the Ore</h1>
+            <p className="scene-muted mt-4 text-xl">挑选今天最重要的矿石，把它们浓缩成一张可收藏、可继续觉醒的里程碑卡牌。</p>
+          </div>
+          <img src={sceneAssets.shared.character} alt="Character" className="mx-auto max-h-[600px] w-auto object-contain" />
+        </div>
 
-            {/* 大锅 */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowCabinet(true)}
-              className="cursor-pointer relative w-64 h-64 mx-auto"
-            >
-              {/* 光晕 */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-blue-600/30 rounded-full blur-3xl animate-glow-pulse" />
-              
-              {/* 大锅 */}
-              <div className="relative z-10 w-full h-full flex items-center justify-center">
-                <span className="text-9xl animate-float">🧪</span>
-              </div>
-
-              {/* 气泡 */}
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-4 h-4 bg-purple-500/50 rounded-full"
-                  initial={{ x: 128, y: 180, opacity: 0.8 }}
-                  animate={{ x: 128 + (Math.random() - 0.5) * 80, y: 60, opacity: 0 }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
-                />
-              ))}
-            </motion.div>
-
-            <p className="text-gray-400">
-              点击大锅，开始精炼矿石
-            </p>
-
-            {/* 矿石数量提示 */}
-            <div className="glass rounded-xl p-4 inline-block">
-              <p className="text-gray-300">
-                你有 <span className="text-purple-400 font-bold">{ores.length}</span> 块矿石可用
-              </p>
-            </div>
-
-            {/* 已有卡片 */}
-            {cards.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-white mb-4">我的卡片 ({cards.length})</h3>
-                <div className="flex overflow-x-auto space-x-4 pb-4">
-                  {cards.map((card) => (
-                    <div key={card.id} className="flex-shrink-0 w-32 card-dark rounded-xl overflow-hidden">
-                      <img src={card.image_url} alt={card.title} className="w-full aspect-[3/4] object-cover" />
-                      <div className="p-2">
-                        <p className="text-xs text-gray-300 truncate">{card.title}</p>
-                      </div>
-                    </div>
-                  ))}
+        <div className="scene-column scene-column--center">
+          <AnimatePresence mode="wait">
+            {!showCabinet && !isRefining && !newCard ? (
+              <motion.div key="idle" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg text-center">
+                <div className="relative mx-auto max-w-[420px]">
+                  <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(233,185,94,0.72),transparent_60%)] blur-3xl" />
+                  <img src={sceneAssets.refining.cauldron} alt="Cauldron" className="animate-float relative z-10 w-full" />
                 </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* 炼金橱柜 */}
-        {showCabinet && (
-          <motion.div
-            key="cabinet"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="w-full max-w-2xl"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">炼金橱柜</h2>
-              <button onClick={handleReset} className="text-gray-400 hover:text-white transition-colors">
-                ✕
-              </button>
-            </div>
-
-            <p className="text-gray-400 mb-4">
-              选择要精炼的矿石（{selectedOres.length} 已选）
-            </p>
-
-            {/* 矿石网格 */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 max-h-96 overflow-y-auto">
-              {ores.map((ore, index) => {
-                const isSelected = selectedOres.includes(ore.id)
-                const info = dimensionInfo[ore.refined_data?.dimension || 'Wisdom']
-                return (
-                  <motion.div
-                    key={ore.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleSelectOre(ore.id)}
-                    className={`card-dark p-4 rounded-xl cursor-pointer transition-all ${
-                      isSelected ? 'ring-2 ring-purple-500' : ''
-                    }`}
-                  >
-                    <div className={`w-12 h-12 mx-auto mb-2 rounded-xl ${info.gradient} flex items-center justify-center text-2xl`}>
-                      {info.icon}
-                    </div>
-                    <p className="text-xs text-gray-300 text-center truncate">
-                      {ore.refined_data?.text || '未提炼'}
-                    </p>
-                    <p className="text-xs text-gray-500 text-center mt-1">
-                      {ore.created_at?.split('T')[0]}
-                    </p>
-                  </motion.div>
-                )
-              })}
-            </div>
-
-            {ores.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>没有可用的矿石</p>
-                <p className="text-sm">请先去采集灵光</p>
-              </div>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleRefine}
-                disabled={selectedOres.length === 0}
-                className="btn-gold w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                精炼 ✨ ({selectedOres.length} 块矿石)
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-
-        {/* 精炼动画 */}
-        {isRefining && (
-          <motion.div
-            key="refining"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="text-center space-y-8"
-          >
-            <div className="relative w-64 h-64 mx-auto">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <span className="text-9xl">🧪</span>
+                <div className="mt-8 flex justify-center gap-3">
+                  <GoldButton onClick={() => setShowCabinet(true)}>Open Ore Cabinet</GoldButton>
+                </div>
+                <div className="mt-5 text-lg text-[#6d5536]">已有卡牌 {cards.length} 张，可用矿石 {ores.length} 块。</div>
               </motion.div>
-              {[...Array(12)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-3 h-3 bg-yellow-400 rounded-full"
-                  initial={{ x: 128, y: 200, opacity: 1 }}
-                  animate={{ x: 128 + (Math.random() - 0.5) * 200, y: 40 + Math.random() * 100, opacity: 0 }}
-                  transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.05 }}
-                />
-              ))}
-            </div>
-            <motion.p
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="text-gray-400 text-lg"
-            >
-              正在精炼中...
-            </motion.p>
-          </motion.div>
-        )}
+            ) : null}
 
-        {/* 卡片显现 */}
-        {newCard && (
-          <motion.div
-            key="card"
-            initial={{ opacity: 0, scale: 0.5, y: 100 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ type: 'spring', duration: 0.8 }}
-            className="w-full max-w-sm"
-          >
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gradient">精炼成功！</h2>
-            </div>
-            <motion.div
-              animate={{
-                boxShadow: [
-                  '0 0 20px rgba(139, 92, 246, 0.3)',
-                  '0 0 40px rgba(139, 92, 246, 0.6)',
-                  '0 0 20px rgba(139, 92, 246, 0.3)',
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="card-dark rounded-2xl overflow-hidden mb-6"
-            >
-              <img src={newCard.imageUrl} alt="New Card" className="w-full aspect-[3/4] object-cover" />
-              <div className="p-4">
-                <input
-                  type="text"
-                  value={editableTitle}
-                  onChange={(e) => setEditableTitle(e.target.value)}
-                  className="w-full bg-transparent text-center text-lg font-semibold text-white border-b border-purple-500/50 focus:outline-none focus:border-purple-500"
-                />
+            {isRefining ? (
+              <motion.div key="refining" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-lg text-center">
+                <img src={sceneAssets.refining.cauldron} alt="Refining" className="animate-float mx-auto w-full max-w-[420px]" />
+                <div className="brand-script mt-6 text-4xl font-bold text-[#7b551f]">Refining in progress...</div>
+                <p className="mt-3 text-xl text-[#6d5536]">矿石正在融合、交织，并凝成新的卡牌纹样。</p>
+              </motion.div>
+            ) : null}
+
+            {newCard ? (
+              <motion.div key="card" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md">
+                <ParchmentPanel className="p-6 text-center">
+                  <div className="brand-script text-3xl font-bold text-[#70491d]">Card Forged</div>
+                  <div className="mx-auto mt-5 overflow-hidden rounded-[1.5rem] bg-white/60 p-3 shadow-[0_20px_35px_rgba(119,84,39,0.16)]">
+                    <img src={newCard.imageUrl} alt="New Card" className="w-full rounded-[1.2rem] object-cover" />
+                  </div>
+                  <input
+                    type="text"
+                    value={editableTitle}
+                    onChange={(e) => setEditableTitle(e.target.value)}
+                    className="scene-input mt-5 text-center"
+                    placeholder="给这张卡牌命名"
+                  />
+                  <div className="mt-6 flex justify-center gap-3">
+                    <GoldButton onClick={handleSaveCard}>Store Card</GoldButton>
+                    <button onClick={handleReset} className="scene-badge">Reset</button>
+                  </div>
+                </ParchmentPanel>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <div className="scene-column items-center">
+          <div className="relative w-full max-w-[440px]">
+            <img src={sceneAssets.shared.owl} alt="Owl" className="absolute right-0 top-[-4rem] h-40 w-auto animate-float md:h-48" />
+            <ParchmentPanel className="px-6 pb-8 pt-16">
+              <div className="mb-4 text-center">
+                <div className="brand-script text-2xl font-bold text-[#78511f]">Card Vault</div>
+                <p className="scene-muted text-base">最新生成的卡牌会先存放在这里，等待下一次觉醒。</p>
               </div>
+              <div className="space-y-3">
+                {cards.slice(0, 4).map((card) => (
+                  <div key={card.id} className="scene-card flex items-center gap-3 p-3">
+                    <img src={card.image_url} alt={card.title} className="h-16 w-12 rounded-xl object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-lg font-semibold text-[#5a4127]">{card.title}</div>
+                      <div className="text-sm text-[#9d7b45]">{card.created_at?.split('T')[0]}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ParchmentPanel>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showCabinet ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(50,35,18,0.45)] px-4 backdrop-blur-md" onClick={handleReset}>
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 18 }} className="w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
+              <ParchmentPanel className="p-8">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="brand-script text-3xl font-bold text-[#70491d]">Choose Ores</h2>
+                    <p className="scene-muted text-lg">已选择 {selectedOres.length} 块矿石，越聚焦的组合通常越容易得到清晰卡牌。</p>
+                  </div>
+                  <button onClick={handleReset} className="scene-badge">Close</button>
+                </div>
+
+                {ores.length === 0 ? (
+                  <div className="py-12 text-center text-xl text-[#7e6033]">还没有可用矿石，请先去采集页面保存灵光。</div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    {ores.map((ore) => {
+                      const isSelected = selectedOres.includes(ore.id)
+                      const info = dimensionInfo[ore.refined_data?.dimension || 'Wisdom']
+                      return (
+                        <button key={ore.id} onClick={() => handleSelectOre(ore.id)} className={`scene-card p-4 text-left transition-all ${isSelected ? 'ring-2 ring-[#d2a74f] bg-[#fff6dd]' : ''}`}>
+                          <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl text-white ${info.gradient}`}>
+                            {info.icon}
+                          </div>
+                          <div className="line-clamp-3 text-sm font-semibold text-[#5a4127]">{ore.refined_data?.text || '未命名矿石'}</div>
+                          <div className="mt-2 text-xs text-[#9d7b45]">{info.name} · {ore.created_at?.split('T')[0]}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div className="mt-6 flex justify-center gap-3">
+                  <GoldButton onClick={handleRefine} disabled={selectedOres.length === 0}>Refine Selected Ores</GoldButton>
+                </div>
+              </ParchmentPanel>
             </motion.div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSaveCard}
-              className="btn-gold w-full py-4"
-            >
-              收纳进库 ✨
-            </motion.button>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
-    </div>
+    </SceneShell>
   )
 }

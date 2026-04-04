@@ -1,8 +1,11 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAccount } from 'wagmi'
+import { ParchmentPanel } from '@/components/scene/ParchmentPanel'
+import { SceneShell } from '@/components/scene/SceneShell'
+import { sceneAssets } from '@/components/scene/assets'
 
 interface Dimension {
   name: string
@@ -19,13 +22,12 @@ interface Medal {
   created_at: string
 }
 
-// 默认维度（用户可以自定义）
 const defaultDimensions: Dimension[] = [
   { name: '智慧', score: 30 },
   { name: '意志', score: 30 },
   { name: '创造', score: 30 },
   { name: '感知', score: 30 },
-  { name: '技术', score: 30 },
+  { name: '技能', score: 30 },
   { name: '韧性', score: 30 },
 ]
 
@@ -35,19 +37,12 @@ export default function ProfilePage() {
   const [medals, setMedals] = useState<Medal[]>([])
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (isConnected && address) {
-      fetchData()
+      fetchMedals()
     }
   }, [isConnected, address])
-
-  const fetchData = async () => {
-    setIsLoading(true)
-    await fetchMedals()
-    setIsLoading(false)
-  }
 
   const fetchMedals = async () => {
     try {
@@ -62,12 +57,11 @@ export default function ProfilePage() {
   }
 
   const updateDimension = (index: number, field: 'name' | 'score', value: string | number) => {
-    const newDimensions = [...dimensions]
-    newDimensions[index] = { ...newDimensions[index], [field]: value }
-    setDimensions(newDimensions)
+    const nextDimensions = [...dimensions]
+    nextDimensions[index] = { ...nextDimensions[index], [field]: value }
+    setDimensions(nextDimensions)
   }
 
-  // 计算雷达图点位置
   const getRadarPoints = () => {
     const centerX = 150
     const centerY = 150
@@ -76,230 +70,260 @@ export default function ProfilePage() {
     return dimensions.map((dim, i) => {
       const angle = (Math.PI * 2 * i) / dimensions.length - Math.PI / 2
       const radius = (dim.score / 100) * maxRadius
+
       return {
         x: centerX + Math.cos(angle) * radius,
         y: centerY + Math.sin(angle) * radius,
-        labelX: centerX + Math.cos(angle) * (maxRadius + 30),
-        labelY: centerY + Math.sin(angle) * (maxRadius + 30),
+        labelX: centerX + Math.cos(angle) * (maxRadius + 28),
+        labelY: centerY + Math.sin(angle) * (maxRadius + 28),
       }
     })
   }
 
   const radarPoints = getRadarPoints()
-  const polygonPoints = radarPoints.map(p => `${p.x},${p.y}`).join(' ')
+  const polygonPoints = radarPoints.map((point) => `${point.x},${point.y}`).join(' ')
 
-  // 绘制网格
   const getGridPolygons = () => {
     const levels = [0.2, 0.4, 0.6, 0.8, 1]
     const centerX = 150
     const centerY = 150
     const maxRadius = 120
 
-    return levels.map(level => {
-      const points = dimensions.map((_, i) => {
-        const angle = (Math.PI * 2 * i) / dimensions.length - Math.PI / 2
-        const radius = maxRadius * level
-        return `${centerX + Math.cos(angle) * radius},${centerY + Math.sin(angle) * radius}`
-      }).join(' ')
-      return points
-    })
+    return levels.map((level) =>
+      dimensions
+        .map((_, i) => {
+          const angle = (Math.PI * 2 * i) / dimensions.length - Math.PI / 2
+          const radius = maxRadius * level
+          return `${centerX + Math.cos(angle) * radius},${centerY + Math.sin(angle) * radius}`
+        })
+        .join(' ')
+    )
   }
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="text-6xl mb-6 animate-float">🔮</div>
-          <h2 className="text-2xl font-bold text-white">请先连接钱包</h2>
-          <p className="text-gray-400">连接钱包后即可查看灵魂画像</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-4xl animate-spin">⚙️</div>
-        <p className="text-gray-400 mt-4">加载中...</p>
-      </div>
+      <SceneShell>
+        <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center">
+          <ParchmentPanel className="max-w-xl p-10 text-center">
+            <h2 className="brand-script text-4xl font-bold text-[#6f4a1d]">Connect to View Archive</h2>
+            <p className="mt-4 text-xl text-[#6d5536]">连接钱包后，才能查看你的勋章陈列墙与灵魂雷达。</p>
+          </ParchmentPanel>
+        </div>
+      </SceneShell>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl">
-          🔮
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">
-          {address?.slice(0, 6)}...{address?.slice(-4)}
-        </h1>
-        <p className="text-gray-400">What you do and how you think build who you are.</p>
-      </motion.div>
-
-      {/* 雷达图区域 */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card-dark rounded-2xl p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">灵魂雷达</h2>
-          <button onClick={() => setIsEditing(!isEditing)} className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-            {isEditing ? '完成' : '编辑'}
-          </button>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          {/* 雷达图 */}
-          <div className="w-full md:w-1/2">
-            <svg viewBox="0 0 300 300" className="w-full">
-              {getGridPolygons().map((points, i) => (
-                <polygon key={i} points={points} fill="none" stroke="rgba(139, 92, 246, 0.1)" strokeWidth="1" />
-              ))}
-              {radarPoints.map((point, i) => (
-                <line key={i} x1="150" y1="150" x2={point.x} y2={point.y} stroke="rgba(139, 92, 246, 0.2)" strokeWidth="1" />
-              ))}
-              <motion.polygon
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
-                points={polygonPoints}
-                fill="rgba(139, 92, 246, 0.2)"
-                stroke="rgba(139, 92, 246, 0.8)"
-                strokeWidth="2"
-              />
-              {radarPoints.map((point, i) => (
-                <motion.circle key={i} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 * i }} cx={point.x} cy={point.y} r="4" fill="#8B5CF6" />
-              ))}
-              {dimensions.map((dim, i) => (
-                <text key={i} x={radarPoints[i].labelX} y={radarPoints[i].labelY} textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize="12">
-                  {dim.name}
-                </text>
-              ))}
-            </svg>
+    <SceneShell>
+      <div className="scene-grid">
+        <div className="scene-column">
+          <div className="mb-6 max-w-md">
+            <h1 className="scene-hero-title">Soul Archive</h1>
+            <p className="scene-muted mt-4 text-xl">你的勋章、维度雷达与身份演化都汇聚在这里。</p>
           </div>
+          <img
+            src={sceneAssets.shared.character}
+            alt="Character"
+            className="mx-auto max-h-[600px] w-auto object-contain"
+          />
+        </div>
 
-          {/* 维度编辑 */}
-          <div className="w-full md:w-1/2 space-y-3">
-            {dimensions.map((dim, i) => (
-              <div key={i} className="flex items-center space-x-3">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={dim.name}
-                    onChange={(e) => updateDimension(i, 'name', e.target.value)}
-                    className="w-20 bg-transparent text-sm text-gray-300 border-b border-purple-500/50 focus:outline-none"
-                  />
-                ) : (
-                  <span className="w-20 text-sm text-gray-400">{dim.name}</span>
-                )}
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={dim.score}
-                    onChange={(e) => updateDimension(i, 'score', parseInt(e.target.value))}
-                    disabled={!isEditing}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                  />
-                </div>
-                <span className="w-8 text-sm text-purple-400">{dim.score}</span>
+        <div className="scene-column scene-column--center">
+          <div className="w-full">
+            <div className="mb-5 flex items-center justify-between px-2">
+              <div>
+                <h2 className="brand-script text-3xl font-bold text-[#70491d]">Medal Wall</h2>
+                <p className="scene-muted text-lg">点击任意勋章，查看它由哪些经历与卡牌铸成。</p>
               </div>
-            ))}
+              <div className="scene-badge">{medals.length} medals</div>
+            </div>
+
+            <div className="relative mx-auto max-w-[560px]">
+              <img
+                src={sceneAssets.profile.wall}
+                alt="Medal Wall"
+                className="w-full opacity-95 drop-shadow-[0_18px_32px_rgba(126,86,41,0.18)]"
+              />
+
+              <div className="absolute inset-x-[13%] inset-y-[10%] grid grid-cols-3 gap-4 md:gap-6">
+                {Array.from({ length: 9 }).map((_, index) => {
+                  const medal = medals[index]
+
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => medal && setSelectedMedal(medal)}
+                      className="flex items-center justify-center bg-transparent p-1"
+                    >
+                      {medal ? (
+                        <img
+                          src={medal.image_url}
+                          alt={medal.title}
+                          className="h-24 w-24 rounded-full object-cover shadow-[0_14px_24px_rgba(130,93,43,0.22)] md:h-28 md:w-28"
+                        />
+                      ) : (
+                        <div className="h-24 w-24 rounded-full border border-dashed border-[#d1b57c]/40 md:h-28 md:w-28" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
-      </motion.div>
 
-      {/* 勋章墙 */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <h2 className="text-xl font-bold text-white mb-4">灵魂勋章</h2>
-
-        {medals.length === 0 ? (
-          <div className="card-dark rounded-2xl p-12 text-center">
-            <div className="text-4xl mb-4">🏆</div>
-            <p className="text-gray-400">还没有勋章</p>
-            <p className="text-sm text-gray-500">去觉醒你的第一个勋章吧</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {medals.map((medal, index) => (
-              <motion.div
-                key={medal.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedMedal(medal)}
-                className="card-dark rounded-2xl overflow-hidden cursor-pointer"
-              >
-                <div className="aspect-square relative">
-                  <img src={medal.image_url} alt={medal.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-lg font-bold text-white">{medal.title}</h3>
-                    <p className="text-xs text-gray-400 truncate">{medal.description}</p>
-                  </div>
+        <div className="scene-column items-center">
+          <div className="relative w-full max-w-[440px]">
+            <img
+              src={sceneAssets.shared.owl}
+              alt="Owl"
+              className="absolute right-0 top-[-4rem] h-40 w-auto animate-float md:h-48"
+            />
+            <ParchmentPanel className="px-6 pb-8 pt-16">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <div className="brand-script text-2xl font-bold text-[#78511f]">Soul Radar</div>
+                  <p className="scene-muted text-base">维度分布会随着你持续记录与觉醒而变化。</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </motion.div>
+                <button onClick={() => setIsEditing(!isEditing)} className="scene-badge">
+                  {isEditing ? 'Done' : 'Edit'}
+                </button>
+              </div>
 
-      {/* 勋章详情弹窗 */}
+              <svg viewBox="0 0 300 300" className="mx-auto w-full max-w-[320px]">
+                {getGridPolygons().map((points, index) => (
+                  <polygon
+                    key={index}
+                    points={points}
+                    fill="none"
+                    stroke="rgba(164,123,46,0.18)"
+                    strokeWidth="1"
+                  />
+                ))}
+
+                {radarPoints.map((point, index) => (
+                  <line
+                    key={index}
+                    x1="150"
+                    y1="150"
+                    x2={point.x}
+                    y2={point.y}
+                    stroke="rgba(164,123,46,0.25)"
+                    strokeWidth="1"
+                  />
+                ))}
+
+                <motion.polygon
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  points={polygonPoints}
+                  fill="rgba(224,184,92,0.26)"
+                  stroke="rgba(196,145,47,0.82)"
+                  strokeWidth="2"
+                />
+
+                {radarPoints.map((point, index) => (
+                  <motion.circle
+                    key={index}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    cx={point.x}
+                    cy={point.y}
+                    r="4"
+                    fill="#b8842f"
+                  />
+                ))}
+
+                {dimensions.map((dim, index) => (
+                  <text
+                    key={index}
+                    x={radarPoints[index].labelX}
+                    y={radarPoints[index].labelY}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#7d6033"
+                    fontSize="12"
+                  >
+                    {dim.name}
+                  </text>
+                ))}
+              </svg>
+
+              <div className="mt-5 space-y-3">
+                {dimensions.map((dim, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={dim.name}
+                        onChange={(e) => updateDimension(index, 'name', e.target.value)}
+                        className="scene-input w-24 px-3 py-2"
+                      />
+                    ) : (
+                      <span className="w-20 text-base font-semibold text-[#6d5536]">{dim.name}</span>
+                    )}
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={dim.score}
+                      onChange={(e) => updateDimension(index, 'score', parseInt(e.target.value, 10))}
+                      disabled={!isEditing}
+                      className="flex-1 accent-[#c79839]"
+                    />
+                    <span className="w-10 text-right text-sm font-semibold text-[#9d7b45]">{dim.score}</span>
+                  </div>
+                ))}
+              </div>
+            </ParchmentPanel>
+          </div>
+        </div>
+      </div>
+
       <AnimatePresence>
-        {selectedMedal && (
+        {selectedMedal ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(50,35,18,0.45)] px-4 backdrop-blur-md"
             onClick={() => setSelectedMedal(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 50 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass rounded-2xl p-6 w-full max-w-md"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 18 }}
+              className="w-full max-w-xl"
+              onClick={(event) => event.stopPropagation()}
             >
-              {/* 勋章图片 */}
-              <div className="relative w-48 h-48 mx-auto mb-6">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full blur-2xl" />
-                <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-4 border-yellow-500/50">
-                  <img src={selectedMedal.image_url} alt={selectedMedal.title} className="w-full h-full object-cover" />
+              <ParchmentPanel className="p-8 text-center">
+                <div className="mx-auto flex h-60 w-60 items-center justify-center rounded-full bg-[radial-gradient(circle,rgba(255,233,172,0.78),rgba(255,255,255,0.18))]">
+                  <img
+                    src={selectedMedal.image_url}
+                    alt={selectedMedal.title}
+                    className="h-48 w-48 rounded-full object-cover"
+                  />
                 </div>
-              </div>
 
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gradient-gold mb-2">{selectedMedal.title}</h2>
-                <p className="text-gray-400">{selectedMedal.description}</p>
-              </div>
+                <h2 className="brand-script mt-5 text-4xl font-bold text-[#70491d]">{selectedMedal.title}</h2>
+                <p className="mt-3 text-lg text-[#6d5536]">{selectedMedal.description}</p>
 
-              {/* 详情信息 */}
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between py-2 border-b border-gray-700">
-                  <span className="text-gray-500">铸造时间</span>
-                  <span className="text-gray-300">{selectedMedal.created_at?.split('T')[0]}</span>
+                <div className="mt-6 space-y-2 text-base text-[#6d5536]">
+                  <div>铸造时间：{selectedMedal.created_at?.split('T')[0]}</div>
+                  <div>Token ID：{selectedMedal.token_id !== null ? `#${selectedMedal.token_id}` : '未上链'}</div>
+                  <div>来源卡牌数：{selectedMedal.parent_ids?.length || 0}</div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-gray-700">
-                  <span className="text-gray-500">Token ID</span>
-                  <span className="text-gray-300">{selectedMedal.token_id !== null ? `#${selectedMedal.token_id}` : '未上链'}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-700">
-                  <span className="text-gray-500">里程碑数量</span>
-                  <span className="text-gray-300">{selectedMedal.parent_ids?.length || 0} 个</span>
-                </div>
-              </div>
 
-              <button onClick={() => setSelectedMedal(null)} className="w-full mt-6 py-3 rounded-xl bg-gray-800 text-gray-400 hover:text-white transition-colors">
-                关闭
-              </button>
+                <button onClick={() => setSelectedMedal(null)} className="scene-badge mt-6">
+                  Close
+                </button>
+              </ParchmentPanel>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
-    </div>
+    </SceneShell>
   )
 }
