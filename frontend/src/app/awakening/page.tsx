@@ -42,7 +42,7 @@ export default function AwakeningPage() {
   // - resultMedalSize controls the preview medal diameter
   const ritualDoorWidth = 700
   const ritualDoorOffsetY = -50
-  const resultMedalSize = 500
+  const resultMedalSize = 260
 
   const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed, receipt } = useMintMedal()
 
@@ -154,14 +154,20 @@ export default function AwakeningPage() {
             <p className="mt-4 text-xl">Connect your wallet to awaken or evolve medals.</p>
           </div>
         ) : newMedal ? (
-          <div className="fantasy-card w-full max-w-[420px] rounded-[32px] p-6 text-center">
+          <div className="fantasy-card w-full max-w-[400px] rounded-[32px] p-6 text-center">
             <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Medal Forged</p>
             <div
               className="relative mx-auto mt-4"
               style={{ height: `${resultMedalSize}px`, width: `${resultMedalSize}px` }}
             >
               <div className="absolute inset-0 rounded-full bg-yellow-300/20 blur-3xl" />
-              <img src={newMedal.image_url} alt={newMedal.title} className="relative z-10 h-full w-full rounded-full object-cover shadow-2xl" />
+              <div className="relative z-10 h-full w-full rounded-full bg-white/35 p-2 shadow-2xl">
+                <img
+                  src={newMedal.image_url}
+                  alt={newMedal.title}
+                  className="h-full w-full rounded-full object-contain"
+                />
+              </div>
             </div>
             <input value={editableTitle} onChange={(event) => setEditableTitle(event.target.value)} className="input-magical mt-4 text-center text-lg" />
             <p className="mt-3 text-base leading-7 text-[#5b3a1c]">{newMedal.description}</p>

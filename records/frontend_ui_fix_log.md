@@ -34,9 +34,9 @@ Updated:
 I added explicit tuning variables near the top of the component:
 
 ```ts
-const ritualDoorWidth = 360
-const ritualDoorOffsetY = 24
-const resultMedalSize = 288
+const ritualDoorWidth = 700
+const ritualDoorOffsetY = -50
+const resultMedalSize = 260
 ```
 
 These control:
@@ -50,6 +50,16 @@ If you want to self-adjust:
 - Make the awaken entry larger: increase `ritualDoorWidth`
 - Move the awaken entry up or down: adjust `ritualDoorOffsetY`
 - Make the generated medal larger or smaller: adjust `resultMedalSize`
+
+Additional medal preview fix:
+
+- After switching medal assets to 1:1, the generated medal preview could overflow the center panel if `resultMedalSize` was too large.
+- I reduced the preview size and changed the preview image rendering to `object-contain` inside a padded circular container.
+
+Current preview behavior:
+
+- safer preview diameter: `260`
+- image fit mode: `object-contain`
 
 ### 3. Profile medal wall alignment
 
