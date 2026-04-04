@@ -16,6 +16,26 @@ interface Medal {
   created_at: string
 }
 
+// Medal wall tuning controls:
+// - wallMaxWidth controls the full wall size
+// - wallOffsetX / wallOffsetY move the whole wall block
+// - medalWallSlots control each medal position and size individually
+const wallMaxWidth = 700
+const wallOffsetX = 0
+const wallOffsetY = 0
+
+const medalWallSlots = [
+  { left: '31.3%', top: '28.0%', size: '14.0%' },
+  { left: '50.2%', top: '28.0%', size: '14.0%' },
+  { left: '69.3%', top: '28.5%', size: '14.5%' },
+  { left: '31.3%', top: '28.0%', size: '14.0%' },
+  { left: '50.2%', top: '28.0%', size: '14.0%' },
+  { left: '69.3%', top: '28.5%', size: '14.5%' },
+  { left: '31.3%', top: '28.0%', size: '14.0%' },
+  { left: '50.2%', top: '28.0%', size: '14.0%' },
+  { left: '69.3%', top: '28.5%', size: '14.5%' },
+] as const
+
 export default function ProfilePage() {
   const { isConnected, address } = useAccount()
   const [medals, setMedals] = useState<Medal[]>([])
@@ -77,19 +97,32 @@ export default function ProfilePage() {
             <p className="mt-4 text-xl">Connect your wallet to browse your medals and soul archive.</p>
           </div>
         ) : (
-          <div className="relative w-full max-w-[520px]">
-            <img src={uiAssets.medalWall} alt="Medal wall" className="mx-auto w-full max-w-[520px] object-contain opacity-95" />
-            <div className="absolute inset-0 grid grid-cols-3 gap-4 px-[17%] py-[18%]">
-              {Array.from({ length: 9 }).map((_, index) => {
+          <div
+            className="relative w-full"
+            style={{
+              maxWidth: `${wallMaxWidth}px`,
+              transform: `translate(${wallOffsetX}px, ${wallOffsetY}px)`,
+            }}
+          >
+            <img src={uiAssets.medalWall} alt="Medal wall" className="mx-auto w-full object-contain opacity-95" />
+            <div className="absolute inset-0 overflow-visible">
+              {medalWallSlots.map((slot, index) => {
                 const medal = medals[index]
                 return (
                   <button
                     key={index}
                     onClick={() => medal && setSelectedMedal(medal)}
-                    className={`relative flex items-center justify-center rounded-[18px] ${medal ? 'hover:scale-105' : 'border border-dashed border-[#8b6914]/15'} transition`}
+                    className={`absolute flex items-center justify-center rounded-full ${medal ? 'hover:scale-105' : 'border border-dashed border-[#8b6914]/15'} transition`}
+                    style={{
+                      left: slot.left,
+                      top: slot.top,
+                      width: slot.size,
+                      height: slot.size,
+                      transform: 'translate(-50%, -50%)',
+                    }}
                   >
                     {medal ? (
-                      <img src={medal.image_url} alt={medal.title} className="h-full w-full rounded-[18px] object-cover shadow-lg" />
+                      <img src={medal.image_url} alt={medal.title} className="h-full w-full rounded-full object-cover shadow-lg" />
                     ) : null}
                   </button>
                 )

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Sparkles, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { FantasyShell } from '@/components/FantasyShell'
 import { uiAssets } from '@/utils/uiAssets'
@@ -27,10 +27,10 @@ interface EditingOre {
 }
 
 const dimensionInfo = {
-  Wisdom: { label: 'Wisdom', gradient: 'ore-gradient-wisdom' },
-  Will: { label: 'Will', gradient: 'ore-gradient-will' },
-  Creation: { label: 'Creation', gradient: 'ore-gradient-creation' },
-  Connection: { label: 'Connection', gradient: 'ore-gradient-connection' },
+  Wisdom: { label: 'Wisdom', gradient: 'ore-gradient-wisdom', crystal: uiAssets.crystals[0] },
+  Will: { label: 'Will', gradient: 'ore-gradient-will', crystal: uiAssets.crystals[4] },
+  Creation: { label: 'Creation', gradient: 'ore-gradient-creation', crystal: uiAssets.crystals[2] },
+  Connection: { label: 'Connection', gradient: 'ore-gradient-connection', crystal: uiAssets.crystals[5] },
 } as const
 
 export default function MiningPage() {
@@ -183,7 +183,14 @@ export default function MiningPage() {
                 <div key={ore.id} className="rounded-[24px] border border-[#8b6914]/20 bg-white/55 p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full ${dimensionInfo[ore.dimension].gradient}`} />
+                      <div className="relative flex h-12 w-12 items-center justify-center">
+                        <div className={`absolute inset-1 rounded-full blur-md ${dimensionInfo[ore.dimension].gradient}`} />
+                        <img
+                          src={dimensionInfo[ore.dimension].crystal}
+                          alt={dimensionInfo[ore.dimension].label}
+                          className="relative z-10 h-12 w-12 object-contain drop-shadow-md"
+                        />
+                      </div>
                       <div>
                         <p className="cinzel text-sm font-bold uppercase tracking-[0.2em] text-[#8b6914]">{dimensionInfo[ore.dimension].label}</p>
                         <p className="text-sm text-[#6b4a2c]">Quality {ore.score}/5</p>

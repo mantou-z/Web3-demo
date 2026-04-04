@@ -24,10 +24,10 @@ interface Card {
 }
 
 const dimensionInfo = {
-  Wisdom: { label: 'Wisdom', gradient: 'ore-gradient-wisdom' },
-  Will: { label: 'Will', gradient: 'ore-gradient-will' },
-  Creation: { label: 'Creation', gradient: 'ore-gradient-creation' },
-  Connection: { label: 'Connection', gradient: 'ore-gradient-connection' },
+  Wisdom: { label: 'Wisdom', gradient: 'ore-gradient-wisdom', crystal: uiAssets.crystals[0] },
+  Will: { label: 'Will', gradient: 'ore-gradient-will', crystal: uiAssets.crystals[4] },
+  Creation: { label: 'Creation', gradient: 'ore-gradient-creation', crystal: uiAssets.crystals[2] },
+  Connection: { label: 'Connection', gradient: 'ore-gradient-connection', crystal: uiAssets.crystals[5] },
 } as const
 
 export default function RefiningPage() {
@@ -181,7 +181,14 @@ export default function RefiningPage() {
                             selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
                           }`}
                         >
-                          <div className={`mx-auto h-12 w-12 rounded-full ${info.gradient}`} />
+                          <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                            <div className={`absolute inset-2 rounded-full blur-md ${info.gradient}`} />
+                            <img
+                              src={info.crystal}
+                              alt={info.label}
+                              className="relative z-10 h-16 w-16 object-contain drop-shadow-md"
+                            />
+                          </div>
                           <p className="cinzel mt-2 text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">{info.label}</p>
                           <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{ore.refined_data.text}</p>
                         </button>

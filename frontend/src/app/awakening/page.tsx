@@ -36,6 +36,14 @@ export default function AwakeningPage() {
   const [newMedal, setNewMedal] = useState<Medal | null>(null)
   const [editableTitle, setEditableTitle] = useState('')
 
+  // Tuning knobs for this page:
+  // - ritualDoorWidth controls the idle door size
+  // - ritualDoorOffsetY controls the door vertical offset
+  // - resultMedalSize controls the preview medal diameter
+  const ritualDoorWidth = 700
+  const ritualDoorOffsetY = -50
+  const resultMedalSize = 500
+
   const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed, receipt } = useMintMedal()
 
   useEffect(() => {
@@ -148,7 +156,10 @@ export default function AwakeningPage() {
         ) : newMedal ? (
           <div className="fantasy-card w-full max-w-[420px] rounded-[32px] p-6 text-center">
             <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Medal Forged</p>
-            <div className="relative mx-auto mt-4 h-72 w-72">
+            <div
+              className="relative mx-auto mt-4"
+              style={{ height: `${resultMedalSize}px`, width: `${resultMedalSize}px` }}
+            >
               <div className="absolute inset-0 rounded-full bg-yellow-300/20 blur-3xl" />
               <img src={newMedal.image_url} alt={newMedal.title} className="relative z-10 h-full w-full rounded-full object-cover shadow-2xl" />
             </div>
@@ -160,7 +171,11 @@ export default function AwakeningPage() {
           </div>
         ) : (
           <>
-            <button onClick={() => setShowSelection((current) => !current)} className="group relative w-full max-w-[360px] translate-y-6">
+            <button
+              onClick={() => setShowSelection((current) => !current)}
+              className="group relative w-full"
+              style={{ maxWidth: `${ritualDoorWidth}px`, transform: `translateY(${ritualDoorOffsetY}px)` }}
+            >
               <div className="absolute inset-0 rounded-full bg-yellow-200/20 blur-3xl" />
               <img src={uiAssets.awakenDoor} alt="Awaken door" className="relative z-10 w-full object-contain drop-shadow-[0_15px_40px_rgba(139,92,246,0.35)] transition-transform duration-300 group-hover:scale-[1.02]" />
               <p className="cinzel mt-3 text-center text-lg font-bold uppercase tracking-[0.3em] text-[#8b6914]">Open Ritual</p>
