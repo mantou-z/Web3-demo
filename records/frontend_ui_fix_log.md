@@ -118,16 +118,31 @@ export const centerArtworkTuning = {
     maxWidth: 430,
     offsetX: 0,
     offsetY: 0,
+    labelMarginTop: 12,
+    labelFontSize: 18,
+    labelLetterSpacing: '0.3em',
+    labelOffsetX: 0,
+    labelOffsetY: 0,
   },
   refine: {
     maxWidth: 420,
     offsetX: 0,
     offsetY: 0,
+    labelMarginTop: 12,
+    labelFontSize: 18,
+    labelLetterSpacing: '0.3em',
+    labelOffsetX: 0,
+    labelOffsetY: 0,
   },
   awaken: {
     maxWidth: 550,
     offsetX: 0,
     offsetY: -50,
+    labelMarginTop: 12,
+    labelFontSize: 18,
+    labelLetterSpacing: '0.3em',
+    labelOffsetX: 0,
+    labelOffsetY: 0,
   },
   profileWall: {
     maxWidth: 700,
@@ -175,10 +190,13 @@ Adjustment hints:
 - Adjust cabinet helper text spacing or size: change `helperMarginTop` and `helperFontSize`
 - Resize the center crystal pile: change `centerArtworkTuning.collect.maxWidth`
 - Move the center crystal pile: change `centerArtworkTuning.collect.offsetX` and `centerArtworkTuning.collect.offsetY`
+- Adjust the collect title: change `labelMarginTop`, `labelFontSize`, `labelLetterSpacing`, `labelOffsetX`, `labelOffsetY`
 - Resize the center cauldron: change `centerArtworkTuning.refine.maxWidth`
 - Move the center cauldron: change `centerArtworkTuning.refine.offsetX` and `centerArtworkTuning.refine.offsetY`
+- Adjust the refine title: change `labelMarginTop`, `labelFontSize`, `labelLetterSpacing`, `labelOffsetX`, `labelOffsetY`
 - Resize the awaken door: change `centerArtworkTuning.awaken.maxWidth`
 - Move the awaken door: change `centerArtworkTuning.awaken.offsetX` and `centerArtworkTuning.awaken.offsetY`
+- Adjust the awaken title: change `labelMarginTop`, `labelFontSize`, `labelLetterSpacing`, `labelOffsetX`, `labelOffsetY`
 - Resize the medal wall: change `centerArtworkTuning.profileWall.maxWidth`
 - Move the medal wall: change `centerArtworkTuning.profileWall.offsetX` and `centerArtworkTuning.profileWall.offsetY`
 - Make floating stronger or weaker: change the matching `floatY`

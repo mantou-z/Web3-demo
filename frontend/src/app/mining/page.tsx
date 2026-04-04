@@ -188,6 +188,11 @@ export default function MiningPage() {
             maxWidth={centerArtworkTuning.collect.maxWidth}
             offsetX={centerArtworkTuning.collect.offsetX}
             offsetY={centerArtworkTuning.collect.offsetY}
+            labelMarginTop={centerArtworkTuning.collect.labelMarginTop}
+            labelFontSize={centerArtworkTuning.collect.labelFontSize}
+            labelLetterSpacing={centerArtworkTuning.collect.labelLetterSpacing}
+            labelOffsetX={centerArtworkTuning.collect.labelOffsetX}
+            labelOffsetY={centerArtworkTuning.collect.labelOffsetY}
             floatY={heroFloatTuning.crystalPile.floatY}
             floatDuration={heroFloatTuning.crystalPile.floatDuration}
             floatDelay={heroFloatTuning.crystalPile.floatDelay}

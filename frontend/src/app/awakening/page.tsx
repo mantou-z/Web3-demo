@@ -245,6 +245,11 @@ export default function AwakeningPage() {
               maxWidth={centerArtworkTuning.awaken.maxWidth}
               offsetX={centerArtworkTuning.awaken.offsetX}
               offsetY={centerArtworkTuning.awaken.offsetY}
+              labelMarginTop={centerArtworkTuning.awaken.labelMarginTop}
+              labelFontSize={centerArtworkTuning.awaken.labelFontSize}
+              labelLetterSpacing={centerArtworkTuning.awaken.labelLetterSpacing}
+              labelOffsetX={centerArtworkTuning.awaken.labelOffsetX}
+              labelOffsetY={centerArtworkTuning.awaken.labelOffsetY}
               floatY={heroFloatTuning.awakenDoor.floatY}
               floatDuration={heroFloatTuning.awakenDoor.floatDuration}
               floatDelay={heroFloatTuning.awakenDoor.floatDelay}

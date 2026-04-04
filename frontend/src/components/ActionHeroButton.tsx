@@ -13,24 +13,15 @@ type ActionHeroButtonProps = PropsWithChildren<{
   imageClassName?: string
   offsetX?: number
   offsetY?: number
+  labelMarginTop?: number
+  labelFontSize?: number
+  labelLetterSpacing?: string
+  labelOffsetX?: number
+  labelOffsetY?: number
   floatY?: number
   floatDuration?: number
   floatDelay?: number
 }>
-
-// Main action label tuning:
-// - containerMaxWidth controls the main image block width
-// - labelMarginTop controls the distance between image and label
-// - labelFontSize / labelLetterSpacing control text style
-// - labelOffsetX / labelOffsetY move the label without affecting the image
-const actionHeroLabelTuning = {
-  containerMaxWidth: 430,
-  labelMarginTop: 12,
-  labelFontSize: 18,
-  labelLetterSpacing: '0.3em',
-  labelOffsetX: 0,
-  labelOffsetY: 0,
-} as const
 
 export function ActionHeroButton({
   imageSrc,
@@ -42,6 +33,11 @@ export function ActionHeroButton({
   imageClassName = '',
   offsetX = 0,
   offsetY = 0,
+  labelMarginTop = 12,
+  labelFontSize = 18,
+  labelLetterSpacing = '0.3em',
+  labelOffsetX = 0,
+  labelOffsetY = 0,
   floatY = 12,
   floatDuration = 5.2,
   floatDelay = 0,
@@ -52,7 +48,7 @@ export function ActionHeroButton({
       onClick={onClick}
       className="group relative w-full"
       style={{
-        maxWidth: `${maxWidth ?? actionHeroLabelTuning.containerMaxWidth}px`,
+        maxWidth: `${maxWidth ?? 430}px`,
         transform: `translate(${offsetX}px, ${offsetY}px)`,
       }}
     >
@@ -77,10 +73,10 @@ export function ActionHeroButton({
       <p
         className="cinzel text-center font-bold uppercase text-[#8b6914]"
         style={{
-          marginTop: `${actionHeroLabelTuning.labelMarginTop}px`,
-          fontSize: `${actionHeroLabelTuning.labelFontSize}px`,
-          letterSpacing: actionHeroLabelTuning.labelLetterSpacing,
-          transform: `translate(${actionHeroLabelTuning.labelOffsetX}px, ${actionHeroLabelTuning.labelOffsetY}px)`,
+          marginTop: `${labelMarginTop}px`,
+          fontSize: `${labelFontSize}px`,
+          letterSpacing: labelLetterSpacing,
+          transform: `translate(${labelOffsetX}px, ${labelOffsetY}px)`,
         }}
       >
         {label}

@@ -163,6 +163,11 @@ export default function RefiningPage() {
               maxWidth={centerArtworkTuning.refine.maxWidth}
               offsetX={centerArtworkTuning.refine.offsetX}
               offsetY={centerArtworkTuning.refine.offsetY}
+              labelMarginTop={centerArtworkTuning.refine.labelMarginTop}
+              labelFontSize={centerArtworkTuning.refine.labelFontSize}
+              labelLetterSpacing={centerArtworkTuning.refine.labelLetterSpacing}
+              labelOffsetX={centerArtworkTuning.refine.labelOffsetX}
+              labelOffsetY={centerArtworkTuning.refine.labelOffsetY}
               floatY={heroFloatTuning.cauldron.floatY}
               floatDuration={heroFloatTuning.cauldron.floatDuration}
               floatDelay={heroFloatTuning.cauldron.floatDelay}
