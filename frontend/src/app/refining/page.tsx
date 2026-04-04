@@ -34,6 +34,7 @@ export default function RefiningPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [newCard, setNewCard] = useState<Card | null>(null)
   const [editableTitle, setEditableTitle] = useState('')
+  const isGeneratingCard = isRefining
 
   useEffect(() => {
     if (!isConnected || !address) {
@@ -141,67 +142,6 @@ export default function RefiningPage() {
               <p className="cinzel mt-3 text-center text-lg font-bold uppercase tracking-[0.3em] text-[#8b6914]">Click to Refine</p>
             </button>
 
-            <AnimatePresence>
-              {showSelection && (
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 16 }}
-                  className="fantasy-card w-full rounded-[32px] p-6"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <div>
-                      <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Ore Cabinet</p>
-                      <p className="text-lg text-[#5b3a1c]">Choose the ores you want to refine into a milestone card.</p>
-                    </div>
-                    <span className="text-sm text-[#8b6914]">{selectedOres.length} selected</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                    {ores.map((ore) => {
-                      const selected = selectedOres.includes(ore.id)
-                      const visual = getOreVisual(
-                        ore.refined_data.dimension,
-                        `${ore.id}-${ore.refined_data.text}`,
-                      )
-                      return (
-                        <button
-                          key={ore.id}
-                          onClick={() => {
-                            setSelectedOres((current) =>
-                              current.includes(ore.id)
-                                ? current.filter((id) => id !== ore.id)
-                                : [...current, ore.id],
-                            )
-                          }}
-                          className={`rounded-[24px] border p-4 text-center transition ${
-                            selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
-                          }`}
-                        >
-                          <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
-                            <div className={`absolute inset-2 rounded-full blur-md ${visual.glowClass}`} />
-                            <img
-                              src={visual.crystal}
-                              alt={visual.label}
-                              className="relative z-10 h-16 w-16 object-contain drop-shadow-md"
-                            />
-                          </div>
-                          <p className="cinzel mt-2 text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">{visual.label}</p>
-                          <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{ore.refined_data.text}</p>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  <div className="mt-5 flex gap-3">
-                    <button onClick={handleRefine} disabled={selectedOres.length === 0 || isRefining} className="gold-button disabled:cursor-not-allowed disabled:opacity-60">
-                      {isRefining ? 'Refining...' : 'Refine Selected'}
-                    </button>
-                    <button onClick={() => setShowSelection(false)} className="glass-chip">Close</button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </>
         )}
       </div>
@@ -243,6 +183,101 @@ export default function RefiningPage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showSelection && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"
+            onClick={() => setShowSelection(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 24, scale: 0.96 }}
+              className="fantasy-card w-full max-w-5xl rounded-[32px] p-6 md:p-8"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Ore Cabinet</p>
+                  <p className="text-lg text-[#5b3a1c]">Choose the ores you want to refine into a milestone card.</p>
+                </div>
+                <span className="text-sm text-[#8b6914]">{selectedOres.length} selected</span>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  {ores.map((ore) => {
+                    const selected = selectedOres.includes(ore.id)
+                    const visual = getOreVisual(
+                      ore.refined_data.dimension,
+                      `${ore.id}-${ore.refined_data.text}`,
+                    )
+                    return (
+                      <button
+                        key={ore.id}
+                        onClick={() => {
+                          setSelectedOres((current) =>
+                            current.includes(ore.id)
+                              ? current.filter((id) => id !== ore.id)
+                              : [...current, ore.id],
+                          )
+                        }}
+                        className={`rounded-[24px] border p-4 text-center transition ${
+                          selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
+                        }`}
+                      >
+                        <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                          <div className={`absolute inset-2 rounded-full blur-md ${visual.glowClass}`} />
+                          <img
+                            src={visual.crystal}
+                            alt={visual.label}
+                            className="relative z-10 h-16 w-16 object-contain drop-shadow-md"
+                          />
+                        </div>
+                        <p className="cinzel mt-2 text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">{visual.label}</p>
+                        <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{ore.refined_data.text}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button onClick={handleRefine} disabled={selectedOres.length === 0 || isRefining} className="gold-button disabled:cursor-not-allowed disabled:opacity-60">
+                  {isRefining ? 'Refining...' : 'Refine Selected'}
+                </button>
+                <button onClick={() => setShowSelection(false)} className="glass-chip">Close</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isGeneratingCard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-6 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.96 }}
+              className="fantasy-card w-full max-w-md rounded-[32px] p-8 text-center"
+            >
+              <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-[#8b6914]/20 border-t-[#8b6914]" />
+              <p className="cinzel mt-6 text-xl font-bold uppercase tracking-[0.24em] text-[#8b6914]">Refining</p>
+              <p className="mt-3 text-lg leading-8 text-[#5b3a1c]">Your selected ores are being forged into a milestone card...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </FantasyShell>
   )
 }

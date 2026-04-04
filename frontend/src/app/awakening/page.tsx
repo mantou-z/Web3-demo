@@ -38,6 +38,7 @@ export default function AwakeningPage() {
   const [isPersistingMint, setIsPersistingMint] = useState(false)
   const [hasMintedCurrent, setHasMintedCurrent] = useState(false)
   const [lastHandledMintHash, setLastHandledMintHash] = useState<`0x${string}` | undefined>(undefined)
+  const isGeneratingMedal = isAwakening
 
   // Tuning knobs for this page:
   // - ritualDoorWidth controls the idle door size
@@ -230,81 +231,6 @@ export default function AwakeningPage() {
               <p className="cinzel mt-3 text-center text-lg font-bold uppercase tracking-[0.3em] text-[#8b6914]">Open Ritual</p>
             </button>
 
-            <AnimatePresence>
-              {showSelection && (
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 16 }}
-                  className="fantasy-card w-full rounded-[32px] p-6"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <div>
-                      <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Awakening Ritual</p>
-                      <p className="text-lg text-[#5b3a1c]">Pick milestone cards, and optionally evolve an existing medal.</p>
-                    </div>
-                    <span className="text-sm text-[#8b6914]">{selectedCards.length} cards</span>
-                  </div>
-
-                  <div>
-                    <p className="cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">Cards</p>
-                    <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
-                      {cards.map((card) => {
-                        const selected = selectedCards.includes(card.id)
-                        return (
-                          <button
-                            key={card.id}
-                            onClick={() => {
-                              setSelectedCards((current) =>
-                                current.includes(card.id)
-                                  ? current.filter((id) => id !== card.id)
-                                  : [...current, card.id],
-                              )
-                            }}
-                            className={`overflow-hidden rounded-[24px] border p-2 transition ${
-                              selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
-                            }`}
-                          >
-                            <img src={card.image_url} alt={card.title} className="aspect-[3/4] w-full rounded-[18px] object-cover" />
-                            <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{card.title}</p>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {medals.length > 0 && (
-                    <div className="mt-6">
-                      <p className="cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">Optional Evolution Target</p>
-                      <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
-                        {medals.map((medal) => {
-                          const selected = selectedMedal === medal.id
-                          return (
-                            <button
-                              key={medal.id}
-                              onClick={() => setSelectedMedal((current) => (current === medal.id ? null : medal.id))}
-                              className={`overflow-hidden rounded-[24px] border p-2 transition ${
-                                selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
-                              }`}
-                            >
-                              <img src={medal.image_url} alt={medal.title} className="aspect-square w-full rounded-[18px] object-cover" />
-                              <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{medal.title}</p>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-5 flex gap-3">
-                    <button onClick={handleAwaken} disabled={selectedCards.length === 0 || isAwakening} className="gold-button disabled:cursor-not-allowed disabled:opacity-60">
-                      {isAwakening ? 'Awakening...' : selectedMedal ? 'Evolve Medal' : 'Awaken Medal'}
-                    </button>
-                    <button onClick={() => setShowSelection(false)} className="glass-chip">Close</button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </>
         )}
       </div>
@@ -346,6 +272,115 @@ export default function AwakeningPage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showSelection && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-6 backdrop-blur-sm"
+            onClick={() => setShowSelection(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 24, scale: 0.96 }}
+              className="fantasy-card w-full max-w-6xl rounded-[32px] p-6 md:p-8"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Awakening Ritual</p>
+                  <p className="text-lg text-[#5b3a1c]">Pick milestone cards, and optionally evolve an existing medal.</p>
+                </div>
+                <span className="text-sm text-[#8b6914]">{selectedCards.length} cards</span>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                <div>
+                  <p className="cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">Cards</p>
+                  <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
+                    {cards.map((card) => {
+                      const selected = selectedCards.includes(card.id)
+                      return (
+                        <button
+                          key={card.id}
+                          onClick={() => {
+                            setSelectedCards((current) =>
+                              current.includes(card.id)
+                                ? current.filter((id) => id !== card.id)
+                                : [...current, card.id],
+                            )
+                          }}
+                          className={`overflow-hidden rounded-[24px] border p-2 transition ${
+                            selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
+                          }`}
+                        >
+                          <img src={card.image_url} alt={card.title} className="aspect-[3/4] w-full rounded-[18px] object-cover" />
+                          <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{card.title}</p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {medals.length > 0 && (
+                  <div className="mt-6">
+                    <p className="cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#8b6914]">Optional Evolution Target</p>
+                    <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
+                      {medals.map((medal) => {
+                        const selected = selectedMedal === medal.id
+                        return (
+                          <button
+                            key={medal.id}
+                            onClick={() => setSelectedMedal((current) => (current === medal.id ? null : medal.id))}
+                            className={`overflow-hidden rounded-[24px] border p-2 transition ${
+                              selected ? 'border-[#8b6914] bg-white/80 shadow-lg' : 'border-[#8b6914]/15 bg-white/50'
+                            }`}
+                          >
+                            <img src={medal.image_url} alt={medal.title} className="aspect-square w-full rounded-[18px] object-cover" />
+                            <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{medal.title}</p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button onClick={handleAwaken} disabled={selectedCards.length === 0 || isAwakening} className="gold-button disabled:cursor-not-allowed disabled:opacity-60">
+                  {isAwakening ? 'Awakening...' : selectedMedal ? 'Evolve Medal' : 'Awaken Medal'}
+                </button>
+                <button onClick={() => setShowSelection(false)} className="glass-chip">Close</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isGeneratingMedal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-6 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.96 }}
+              className="fantasy-card w-full max-w-md rounded-[32px] p-8 text-center"
+            >
+              <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-[#8b6914]/20 border-t-[#8b6914]" />
+              <p className="cinzel mt-6 text-xl font-bold uppercase tracking-[0.24em] text-[#8b6914]">Awakening</p>
+              <p className="mt-3 text-lg leading-8 text-[#5b3a1c]">Your selected cards are being awakened into a new medal...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </FantasyShell>
   )
 }
