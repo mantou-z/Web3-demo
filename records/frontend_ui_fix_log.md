@@ -6,6 +6,66 @@
 
 ## Completed Fixes
 
+### 000. Background consistency and ore glow variation
+
+Updated:
+
+- `D:\works\hackathon\frontend\src\utils\oreVisuals.ts`
+- `D:\works\hackathon\frontend\src\components\FantasyShell.tsx`
+- `D:\works\hackathon\frontend\src\app\mining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\refining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\globals.css`
+
+Changes made:
+
+- Changed ore glow selection from a fixed dimension-only color to a seeded shared glow palette, so ores no longer all show the same blue aura.
+- Kept the glow deterministic per ore, which means the same ore still matches between `collect` and `refine`.
+- Moved the main page background out of the variable-height shell container and into a fixed viewport background layer.
+- This keeps the crop stable across pages even when page height or content structure changes.
+
+### 00. Regression pass: ore variation / awaken flow / profile cleanup
+
+Updated:
+
+- `D:\works\hackathon\frontend\src\utils\oreVisuals.ts`
+- `D:\works\hackathon\frontend\src\app\mining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\refining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\awakening\page.tsx`
+- `D:\works\hackathon\frontend\src\app\profile\page.tsx`
+
+Changes made:
+
+- Added a shared ore visual helper so each ore gets a stable crystal appearance based on its own id/text seed.
+- Fixed the regression where collect-side ores all looked identical after switching to strict dimension mapping.
+- Kept collect and refine visually consistent by using the same seeded ore visual logic in both pages.
+- Reworked the awaken success state so mint completion no longer traps the page on `Minted On-Chain`.
+- After mint succeeds, the CTA now becomes `Continue Awakening`, which resets the local medal preview and returns the user to the normal flow.
+- Added a per-transaction hash guard to the awaken mint sync flow so old confirmed receipts do not get reused for the next medal.
+- Removed the bottom medal gallery yellow box from profile because it duplicated the wall display.
+- Strengthened clickability on wall medals so opening the detail modal is handled directly from the wall slots.
+
+### 0. Latest pass: homepage / medal wall / awakening stability / ore consistency
+
+Updated:
+
+- `D:\works\hackathon\frontend\src\app\mining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\page.tsx`
+- `D:\works\hackathon\frontend\src\app\profile\page.tsx`
+- `D:\works\hackathon\frontend\src\app\awakening\page.tsx`
+
+Changes made:
+
+- Unified saved ore rendering in `collect` with the same dimension-based crystal mapping already used in `refine`, so ores no longer change style between the two pages.
+- Removed the three yellow feature boxes from the bottom of the homepage because they duplicated the top navigation.
+- Restored the medal wall to 9 distinct hole coordinates so more than 3 medals can appear on the wall again.
+- Changed wall medals to render inside padded circular containers with `object-contain`, which makes 1:1 medal assets sit more naturally in the wall holes.
+- Fixed the `awaken` mint flow so a newly generated medal no longer disappears immediately after a successful mint confirmation.
+
+New awakening state behavior:
+
+- `isPersistingMint` now gates the backend mint callback, so old transaction state does not clear a newly generated medal.
+- `hasMintedCurrent` keeps the generated medal visible after minting and changes the CTA to a completed state instead of clearing the preview instantly.
+
 ### 1. Collect / Refine ore visuals
 
 Updated the ore presentation in:
@@ -77,15 +137,15 @@ Current tuning data lives here:
 
 ```ts
 const medalWallSlots = [
-  { left: '20.8%', top: '29.6%', size: '25.2%' },
-  { left: '38.1%', top: '29.4%', size: '24.6%' },
-  { left: '55.3%', top: '29.8%', size: '25.4%' },
-  { left: '21.1%', top: '53.4%', size: '24.8%' },
-  { left: '38.3%', top: '53.1%', size: '24.4%' },
-  { left: '55.4%', top: '53.5%', size: '24.9%' },
-  { left: '20.9%', top: '77.1%', size: '24.6%' },
-  { left: '38.2%', top: '76.8%', size: '24.2%' },
-  { left: '55.4%', top: '77.1%', size: '24.8%' },
+  { left: '20.8%', top: '29.6%', size: '22.0%' },
+  { left: '38.1%', top: '29.4%', size: '21.6%' },
+  { left: '55.3%', top: '29.8%', size: '22.1%' },
+  { left: '21.1%', top: '53.4%', size: '21.8%' },
+  { left: '38.3%', top: '53.1%', size: '21.4%' },
+  { left: '55.4%', top: '53.5%', size: '21.8%' },
+  { left: '20.9%', top: '77.1%', size: '21.6%' },
+  { left: '38.2%', top: '76.8%', size: '21.2%' },
+  { left: '55.4%', top: '77.1%', size: '21.6%' },
 ]
 ```
 
