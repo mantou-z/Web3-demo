@@ -44,7 +44,7 @@ export default function AwakeningPage() {
   // - ritualDoorWidth controls the idle door size
   // - ritualDoorOffsetY controls the door vertical offset
   // - resultMedalSize controls the preview medal diameter
-  const ritualDoorWidth = 700
+  const ritualDoorWidth = 550
   const ritualDoorOffsetY = -50
   const resultMedalSize = 260
 
