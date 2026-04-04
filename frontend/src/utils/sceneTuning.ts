@@ -39,6 +39,29 @@ export const showcaseCabinetTuning = {
   helperFontSize: 18,
 } as const
 
+export const centerArtworkTuning = {
+  collect: {
+    maxWidth: 430,
+    offsetX: 0,
+    offsetY: 0,
+  },
+  refine: {
+    maxWidth: 420,
+    offsetX: 0,
+    offsetY: 0,
+  },
+  awaken: {
+    maxWidth: 550,
+    offsetX: 30,
+    offsetY: -50,
+  },
+  profileWall: {
+    maxWidth: 700,
+    offsetX: 100,
+    offsetY: 0,
+  },
+} as const
+
 export const heroFloatTuning = {
   crystalPile: {
     floatY: 16,

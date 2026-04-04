@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAccount } from 'wagmi'
 import { FantasyShell } from '@/components/FantasyShell'
 import { FloatingArtwork } from '@/components/FloatingArtwork'
-import { archivePanelTuning, characterFigureTuning } from '@/utils/sceneTuning'
+import { archivePanelTuning, centerArtworkTuning, characterFigureTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 
 interface Medal {
@@ -17,14 +17,6 @@ interface Medal {
   parent_ids: string[]
   created_at: string
 }
-
-// Medal wall tuning controls:
-// - wallMaxWidth controls the full wall size
-// - wallOffsetX / wallOffsetY move the whole wall block
-// - medalWallSlots control each medal position and size individually
-const wallMaxWidth = 700
-const wallOffsetX = 0
-const wallOffsetY = 0
 
 const medalWallSlots = [
   { left: '31.3%', top: '28.0%', size: '14.3%' },
@@ -97,8 +89,8 @@ export default function ProfilePage() {
           <div
             className="relative w-full"
             style={{
-              maxWidth: `${wallMaxWidth}px`,
-              transform: `translate(${wallOffsetX}px, ${wallOffsetY}px)`,
+              maxWidth: `${centerArtworkTuning.profileWall.maxWidth}px`,
+              transform: `translate(${centerArtworkTuning.profileWall.offsetX}px, ${centerArtworkTuning.profileWall.offsetY}px)`,
             }}
           >
             <img src={uiAssets.medalWall} alt="Medal wall" className="mx-auto w-full object-contain opacity-95" />

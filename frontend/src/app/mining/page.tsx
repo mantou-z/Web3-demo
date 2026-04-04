@@ -8,7 +8,7 @@ import { ActionHeroButton } from '@/components/ActionHeroButton'
 import { FantasyShell } from '@/components/FantasyShell'
 import { FloatingArtwork } from '@/components/FloatingArtwork'
 import { ShowcaseCabinet } from '@/components/ShowcaseCabinet'
-import { archivePanelTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
+import { archivePanelTuning, centerArtworkTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 import { getOreVisual, type OreDimension } from '@/utils/oreVisuals'
 
@@ -185,6 +185,9 @@ export default function MiningPage() {
             onClick={() => setShowCollectionPanel(true)}
             glowClassName="bg-blue-300/20"
             imageClassName="drop-shadow-[0_15px_40px_rgba(59,130,246,0.35)]"
+            maxWidth={centerArtworkTuning.collect.maxWidth}
+            offsetX={centerArtworkTuning.collect.offsetX}
+            offsetY={centerArtworkTuning.collect.offsetY}
             floatY={heroFloatTuning.crystalPile.floatY}
             floatDuration={heroFloatTuning.crystalPile.floatDuration}
             floatDelay={heroFloatTuning.crystalPile.floatDelay}

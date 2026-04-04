@@ -110,6 +110,33 @@ export const showcaseCabinetTuning = {
 }
 ```
 
+Center artwork controls:
+
+```ts
+export const centerArtworkTuning = {
+  collect: {
+    maxWidth: 430,
+    offsetX: 0,
+    offsetY: 0,
+  },
+  refine: {
+    maxWidth: 420,
+    offsetX: 0,
+    offsetY: 0,
+  },
+  awaken: {
+    maxWidth: 550,
+    offsetX: 0,
+    offsetY: -50,
+  },
+  profileWall: {
+    maxWidth: 700,
+    offsetX: 0,
+    offsetY: 0,
+  },
+}
+```
+
 Main artwork float controls:
 
 ```ts
@@ -146,6 +173,14 @@ Adjustment hints:
 - Move the cabinet: change `showcaseCabinetTuning.offsetX` and `showcaseCabinetTuning.offsetY`
 - Adjust cabinet title spacing or size: change `titleMarginTop` and `titleFontSize`
 - Adjust cabinet helper text spacing or size: change `helperMarginTop` and `helperFontSize`
+- Resize the center crystal pile: change `centerArtworkTuning.collect.maxWidth`
+- Move the center crystal pile: change `centerArtworkTuning.collect.offsetX` and `centerArtworkTuning.collect.offsetY`
+- Resize the center cauldron: change `centerArtworkTuning.refine.maxWidth`
+- Move the center cauldron: change `centerArtworkTuning.refine.offsetX` and `centerArtworkTuning.refine.offsetY`
+- Resize the awaken door: change `centerArtworkTuning.awaken.maxWidth`
+- Move the awaken door: change `centerArtworkTuning.awaken.offsetX` and `centerArtworkTuning.awaken.offsetY`
+- Resize the medal wall: change `centerArtworkTuning.profileWall.maxWidth`
+- Move the medal wall: change `centerArtworkTuning.profileWall.offsetX` and `centerArtworkTuning.profileWall.offsetY`
 - Make floating stronger or weaker: change the matching `floatY`
 - Make floating faster or slower: change the matching `floatDuration`
 
@@ -153,6 +188,7 @@ Additional follow-up:
 
 - Applied the same girl / owl / parchment tuning system to `profile`, so its side figures now stay consistent with `collect`, `refine`, and `awaken`.
 - Kept the medal wall and wall medals static in `profile` because they are interactive and should remain stable for clicking.
+- The medal wall and medal slots still move together as one block, so changing `centerArtworkTuning.profileWall.offsetX/offsetY` does not break the medal-to-hole alignment you already adjusted.
 - Reduced page-switch flicker by disabling the floating components' initial mount animation. Floating now starts from the settled layout state instead of animating in from a separate first frame.
 
 ### 000. Background consistency and ore glow variation

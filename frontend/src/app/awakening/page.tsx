@@ -8,7 +8,7 @@ import { useMintMedal } from '@/hooks/useContracts'
 import { FantasyShell } from '@/components/FantasyShell'
 import { FloatingArtwork } from '@/components/FloatingArtwork'
 import { ShowcaseCabinet } from '@/components/ShowcaseCabinet'
-import { archivePanelTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
+import { archivePanelTuning, centerArtworkTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 
 interface Card {
@@ -45,11 +45,8 @@ export default function AwakeningPage() {
   const isGeneratingMedal = isAwakening
 
   // Tuning knobs for this page:
-  // - ritualDoorWidth controls the idle door size
-  // - ritualDoorOffsetY controls the door vertical offset
+  // - centerArtworkTuning.awaken controls the idle door size and placement
   // - resultMedalSize controls the preview medal diameter
-  const ritualDoorWidth = 550
-  const ritualDoorOffsetY = -50
   const resultMedalSize = 260
 
   const { mintMedal, isPending: isMinting, isConfirmed: mintConfirmed, receipt, hash } = useMintMedal()
@@ -238,20 +235,20 @@ export default function AwakeningPage() {
           </div>
         ) : (
           <>
-            <div style={{ transform: `translateY(${ritualDoorOffsetY}px)` }}>
-              <ActionHeroButton
-                imageSrc={uiAssets.awakenDoor}
-                imageAlt="Awaken door"
-                label="Open Ritual"
-                onClick={() => setShowSelection((current) => !current)}
-                glowClassName="bg-yellow-200/20"
-                imageClassName="drop-shadow-[0_15px_40px_rgba(139,92,246,0.35)]"
-                maxWidth={ritualDoorWidth}
-                floatY={heroFloatTuning.awakenDoor.floatY}
-                floatDuration={heroFloatTuning.awakenDoor.floatDuration}
-                floatDelay={heroFloatTuning.awakenDoor.floatDelay}
-              />
-            </div>
+            <ActionHeroButton
+              imageSrc={uiAssets.awakenDoor}
+              imageAlt="Awaken door"
+              label="Open Ritual"
+              onClick={() => setShowSelection((current) => !current)}
+              glowClassName="bg-yellow-200/20"
+              imageClassName="drop-shadow-[0_15px_40px_rgba(139,92,246,0.35)]"
+              maxWidth={centerArtworkTuning.awaken.maxWidth}
+              offsetX={centerArtworkTuning.awaken.offsetX}
+              offsetY={centerArtworkTuning.awaken.offsetY}
+              floatY={heroFloatTuning.awakenDoor.floatY}
+              floatDuration={heroFloatTuning.awakenDoor.floatDuration}
+              floatDelay={heroFloatTuning.awakenDoor.floatDelay}
+            />
 
           </>
         )}

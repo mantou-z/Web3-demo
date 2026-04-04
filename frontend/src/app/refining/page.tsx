@@ -7,7 +7,7 @@ import { ActionHeroButton } from '@/components/ActionHeroButton'
 import { FantasyShell } from '@/components/FantasyShell'
 import { FloatingArtwork } from '@/components/FloatingArtwork'
 import { ShowcaseCabinet } from '@/components/ShowcaseCabinet'
-import { archivePanelTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
+import { archivePanelTuning, centerArtworkTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 import { getOreVisual, type OreDimension } from '@/utils/oreVisuals'
 
@@ -160,7 +160,9 @@ export default function RefiningPage() {
               onClick={() => setShowSelection((current) => !current)}
               glowClassName="bg-purple-300/20"
               imageClassName="drop-shadow-[0_15px_40px_rgba(168,85,247,0.35)]"
-              maxWidth={420}
+              maxWidth={centerArtworkTuning.refine.maxWidth}
+              offsetX={centerArtworkTuning.refine.offsetX}
+              offsetY={centerArtworkTuning.refine.offsetY}
               floatY={heroFloatTuning.cauldron.floatY}
               floatDuration={heroFloatTuning.cauldron.floatDuration}
               floatDelay={heroFloatTuning.cauldron.floatDelay}

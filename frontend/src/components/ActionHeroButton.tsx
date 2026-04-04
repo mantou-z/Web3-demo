@@ -11,6 +11,8 @@ type ActionHeroButtonProps = PropsWithChildren<{
   maxWidth?: number
   glowClassName?: string
   imageClassName?: string
+  offsetX?: number
+  offsetY?: number
   floatY?: number
   floatDuration?: number
   floatDelay?: number
@@ -38,6 +40,8 @@ export function ActionHeroButton({
   maxWidth,
   glowClassName = 'bg-blue-300/20',
   imageClassName = '',
+  offsetX = 0,
+  offsetY = 0,
   floatY = 12,
   floatDuration = 5.2,
   floatDelay = 0,
@@ -47,7 +51,10 @@ export function ActionHeroButton({
     <button
       onClick={onClick}
       className="group relative w-full"
-      style={{ maxWidth: `${maxWidth ?? actionHeroLabelTuning.containerMaxWidth}px` }}
+      style={{
+        maxWidth: `${maxWidth ?? actionHeroLabelTuning.containerMaxWidth}px`,
+        transform: `translate(${offsetX}px, ${offsetY}px)`,
+      }}
     >
       <div className={`absolute inset-0 rounded-full blur-3xl ${glowClassName}`} />
       <motion.div
