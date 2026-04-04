@@ -65,6 +65,15 @@ function hashText(text) {
   return hash;
 }
 
+function pickByHash(list, hash, shift = 0) {
+  if (!Array.isArray(list) || list.length === 0) {
+    return '';
+  }
+
+  const normalizedHash = shift > 0 ? (hash >>> shift) : hash;
+  return list[normalizedHash % list.length] || list[0];
+}
+
 function splitInputToFragments(input) {
   return input
     .split(/[\u3002\uff01\uff1f!?\n\r\uff1b;,\uff0c]/)
@@ -73,17 +82,17 @@ function splitInputToFragments(input) {
 }
 
 function buildOreText(fragment, categoryId) {
-  const config = CATEGORY_CONFIG[categoryId];
+  const config = CATEGORY_CONFIG[categoryId] || CATEGORY_CONFIG.growth;
   const hash = hashText(fragment);
-  const prefix = config.orePrefixes[hash % config.orePrefixes.length];
-  const suffix = config.oreSuffixes[(hash >> 3) % config.oreSuffixes.length];
+  const prefix = pickByHash(config.orePrefixes, hash);
+  const suffix = pickByHash(config.oreSuffixes, hash, 3);
   const core = fragment.length > 18 ? `${fragment.slice(0, 18)}...` : fragment;
 
   return `${prefix}${suffix}\uff1a${core}`;
 }
 
 function selectFromList(list, seedText) {
-  return list[hashText(seedText) % list.length];
+  return pickByHash(list, hashText(seedText));
 }
 
 export function classifyInput(input) {

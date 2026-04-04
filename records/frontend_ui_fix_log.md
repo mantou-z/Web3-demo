@@ -6,6 +6,27 @@
 
 ## Completed Fixes
 
+### 000000. Ore text generation `undefined` fix
+
+Updated:
+
+- `D:\works\hackathon\backend\src\services\localClassification.js`
+
+Changes made:
+
+- Fixed a backend local ore-text generation bug where some generated ore names could contain `undefined`.
+- Root cause: the ore suffix index used a signed right shift, which could become negative for some hash values.
+- Changed the selection logic to use a shared unsigned hash picker with safe fallback behavior.
+
+Example of the bad output this fixes:
+
+- `undefined：跃动undefined：跑步3km`
+
+Current behavior:
+
+- Ore prefix and suffix selection are now stable.
+- If a list or lookup ever fails unexpectedly, the generator falls back to the first available entry instead of leaking `undefined` into the UI.
+
 ### 0000. Collect / Refine / Awaken showcase replaced with cabinet modal
 
 Updated:
