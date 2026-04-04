@@ -2,206 +2,200 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 :root {
-  --background: #0a0a0f;
-  --foreground: #e5e5e5;
-  --card-bg: #14141f;
-  --card-border: #1f1f2e;
-  --primary-purple: #8B5CF6;
-  --primary-blue: #3B82F6;
-  --accent-gold: #FBBF24;
-  --glow-purple: rgba(139, 92, 246, 0.3);
-  --glow-blue: rgba(59, 130, 246, 0.3);
+  --background: #f5ecdd;
+  --foreground: #3d2817;
+  --gold: #d4af37;
+  --gold-deep: #8b6914;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
   color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #fff8ef 0%, #f0e2cd 45%, #eadbc4 100%);
+  font-family: var(--font-cormorant), serif;
+}
+
+.cinzel {
+  font-family: var(--font-cinzel), serif;
+}
+
+.fantasy-page {
+  position: relative;
   min-height: 100vh;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
 }
 
-/* 深色背景渐变 */
-.dark-gradient {
-  background: linear-gradient(180deg, #0a0a0f 0%, #14141f 50%, #1a1a2e 100%);
+.sparkle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
-/* 矿石渐变效果 */
+.fantasy-panel {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(255, 243, 225, 0.42) 0%, rgba(247, 232, 213, 0.24) 50%, rgba(222, 238, 247, 0.26) 100%);
+}
+
+.fantasy-card,
+.card-dark {
+  background: linear-gradient(135deg, rgba(255, 250, 241, 0.78) 0%, rgba(242, 229, 209, 0.72) 100%);
+  border: 1px solid rgba(139, 105, 20, 0.28);
+  box-shadow: 0 18px 40px rgba(101, 67, 33, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass {
+  background: rgba(255, 248, 236, 0.2);
+  border: 1px solid rgba(139, 105, 20, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-image-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+}
+
+.nav-image-button:hover {
+  transform: scale(1.08);
+}
+
+.gold-chip,
+.glass-chip,
+.gold-button {
+  border-radius: 14px;
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.gold-chip,
+.gold-button {
+  color: #3d2817;
+  background: linear-gradient(135deg, #f4d03f 0%, #daa520 100%);
+  border: 2px solid #8b6914;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 24px rgba(218, 165, 32, 0.28);
+}
+
+.gold-chip {
+  padding: 0.65rem 1rem;
+}
+
+.glass-chip {
+  color: #5b3a1c;
+  background: rgba(255, 248, 236, 0.75);
+  border: 1px solid rgba(139, 105, 20, 0.3);
+  padding: 0.55rem 0.9rem;
+}
+
+.gold-button {
+  padding: 0.9rem 1.6rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.gold-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 12px 32px rgba(218, 165, 32, 0.38);
+}
+
 .ore-gradient-wisdom {
-  background: linear-gradient(135deg, #60A5FA, #3B82F6);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 .ore-gradient-will {
-  background: linear-gradient(135deg, #F87171, #EF4444);
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
 }
 
 .ore-gradient-creation {
-  background: linear-gradient(135deg, #FBBF24, #F59E0B);
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.35);
 }
 
 .ore-gradient-connection {
-  background: linear-gradient(135deg, #34D399, #10B981);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #34d399, #10b981);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
 }
 
-/* 毛玻璃效果 */
-.glass {
-  background: rgba(20, 20, 31, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* 深色卡片效果 */
-.card-dark {
-  background: linear-gradient(145deg, #1a1a2e, #14141f);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.card-dark:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 
-    0 10px 15px -3px rgba(139, 92, 246, 0.2),
-    0 4px 6px -2px rgba(139, 92, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* 魔幻光晕效果 */
-.magical-glow {
-  position: relative;
-}
-
-.magical-glow::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(45deg, #8B5CF6, #3B82F6, #10B981, #F59E0B);
-  border-radius: inherit;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  filter: blur(8px);
-}
-
-.magical-glow:hover::before {
-  opacity: 0.6;
-}
-
-/* 品质星级 */
-.star-quality {
-  color: #FBBF24;
-  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-/* 粒子背景 */
-.particles-bg {
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
-}
-
-/* 按钮样式 - 金色呼吸灯 */
 .btn-magical {
   @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
-  background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+  background: linear-gradient(135deg, #b175ff, #6d8ff8);
   color: white;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-magical::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
 }
 
 .btn-magical:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
 }
 
-.btn-magical:hover::before {
-  opacity: 1;
-}
-
-.btn-magical:active {
-  transform: translateY(0);
-}
-
-/* 金色按钮 */
 .btn-gold {
   @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
-  background: linear-gradient(135deg, #FBBF24, #F59E0B);
-  color: #1a1a2e;
-  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-  animation: gold-pulse 2s infinite;
-}
-
-@keyframes gold-pulse {
-  0%, 100% {
-    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-  }
-  50% {
-    box-shadow: 0 4px 25px rgba(251, 191, 36, 0.7);
-  }
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #3d2817;
+  box-shadow: 0 6px 18px rgba(251, 191, 36, 0.35);
 }
 
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(251, 191, 36, 0.6);
 }
 
-/* 输入框样式 - 毛玻璃 */
 .input-magical {
   @apply w-full px-4 py-3 rounded-xl transition-all duration-300;
-  background: rgba(20, 20, 31, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e5e5;
+  background: rgba(255, 250, 241, 0.76);
+  border: 1px solid rgba(139, 105, 20, 0.22);
+  color: #3d2817;
   backdrop-filter: blur(10px);
 }
 
 .input-magical:focus {
   @apply outline-none;
   border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
 }
 
 .input-magical::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(61, 40, 23, 0.45);
 }
 
-/* 进度条 */
-.progress-magical {
-  @apply h-3 rounded-full overflow-hidden;
-  background: rgba(139, 92, 246, 0.1);
+.text-gradient {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.progress-magical-fill {
-  @apply h-full rounded-full transition-all duration-500;
-  background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* 浮动动画 */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -213,10 +207,10 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-/* 发光脉冲 */
 @keyframes glow-pulse {
-  0%, 100% {
-    opacity: 0.6;
+  0%,
+  100% {
+    opacity: 0.5;
   }
   50% {
     opacity: 1;
@@ -227,73 +221,25 @@ body {
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
-/* 矿石旋转 */
-@keyframes ore-spin {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
-}
-
-.ore-spin {
-  animation: ore-spin 3s linear infinite;
-}
-
-/* 法阵发光 */
-@keyframes rune-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
-  }
-  50% {
-    filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.8));
-  }
-}
-
-.rune-glow {
-  animation: rune-glow 2s ease-in-out infinite;
-}
-
-/* 粒子效果 */
-.particle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(139, 92, 246, 0.8);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-/* 滚动条样式 */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0f;
+  background: rgba(255, 248, 236, 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
-  border-radius: 4px;
+  background: rgba(139, 105, 20, 0.28);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 105, 20, 0.42);
 }
 
-/* 文本渐变 */
-.text-gradient {
-  background: linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-gold {
-  background: linear-gradient(135deg, #FBBF24, #F59E0B);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+@media (min-width: 768px) {
+  .fantasy-panel {
+    padding: 24px 32px;
+  }
 }

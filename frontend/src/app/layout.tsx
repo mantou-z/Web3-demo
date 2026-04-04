@@ -1,14 +1,18 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Cinzel, Cormorant_Garamond } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/Providers'
-import { Navbar } from '@/components/Navbar'
 
-const inter = Inter({ subsets: ['latin'] })
+const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' })
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-cormorant',
+})
 
 export const metadata: Metadata = {
-  title: 'Alcheme - 炼金术',
-  description: 'What you do and how you think build who you are. Define yourself, beyond the rules.',
+  title: 'Alcheme',
+  description: 'What you do and how you think build who you are.',
 }
 
 export default function RootLayout({
@@ -18,13 +22,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body className={`${inter.className} dark-gradient min-h-screen`}>
-        <Providers>
-          <Navbar />
-          <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-            {children}
-          </main>
-        </Providers>
+      <body className={`${cinzel.variable} ${cormorant.variable} min-h-screen`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
