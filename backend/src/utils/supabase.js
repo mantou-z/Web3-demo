@@ -22,6 +22,13 @@ const mockStorage = {
   medals: new Map()
 };
 
+let mockIdCounter = 0;
+
+function nextMockId(prefix) {
+  mockIdCounter += 1;
+  return `${prefix}_${Date.now()}_${mockIdCounter}`;
+}
+
 export const db = {
   // User operations
   async getOrCreateUser(walletAddress) {
@@ -46,7 +53,7 @@ export const db = {
     // Mock mode
     if (!mockStorage.users.has(walletAddress)) {
       mockStorage.users.set(walletAddress, {
-        id: `user_${Date.now()}`,
+        id: nextMockId('user'),
         wallet_address: walletAddress,
         created_at: new Date().toISOString()
       });
@@ -56,7 +63,7 @@ export const db = {
 
   // Ore operations
   async createOre(userId, rawData, refinedData) {
-    const oreId = `ore_${Date.now()}`;
+    const oreId = nextMockId('ore');
     const ore = {
       id: oreId,
       user_id: userId,
@@ -107,7 +114,7 @@ export const db = {
 
   // Card operations
   async createCard(userId, title, imageUrl, consumedOreIds) {
-    const cardId = `card_${Date.now()}`;
+    const cardId = nextMockId('card');
     const card = {
       id: cardId,
       user_id: userId,
@@ -178,7 +185,7 @@ export const db = {
 
   // Medal operations
   async createMedal(userId, title, description, imageUrl, tokenId, parentIds) {
-    const medalId = `medal_${Date.now()}`;
+    const medalId = nextMockId('medal');
     const medal = {
       id: medalId,
       user_id: userId,

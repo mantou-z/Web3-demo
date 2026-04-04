@@ -13,28 +13,28 @@ const MEDALS_PREFIX = '/images/medals/';
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.svg'];
 
-export function getRandomCardImage() {
+function getRandomImageFromDirectory(baseDir, basePrefix, category = null) {
   try {
-    const files = fs.readdirSync(CARDS_DIR).filter(f =>
+    const targetDir = category ? path.join(baseDir, category) : baseDir;
+    const files = fs.readdirSync(targetDir).filter(f =>
       IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase())
     );
+
     if (files.length === 0) return null;
+
     const file = files[Math.floor(Math.random() * files.length)];
-    return CARDS_PREFIX + file;
+    return category
+      ? `${basePrefix}${encodeURIComponent(category)}/${file}`
+      : `${basePrefix}${file}`;
   } catch {
     return null;
   }
 }
 
-export function getRandomMedalImage() {
-  try {
-    const files = fs.readdirSync(MEDALS_DIR).filter(f =>
-      IMAGE_EXTENSIONS.includes(path.extname(f).toLowerCase())
-    );
-    if (files.length === 0) return null;
-    const file = files[Math.floor(Math.random() * files.length)];
-    return MEDALS_PREFIX + file;
-  } catch {
-    return null;
-  }
+export function getRandomCardImage(category = null) {
+  return getRandomImageFromDirectory(CARDS_DIR, CARDS_PREFIX, category);
+}
+
+export function getRandomMedalImage(category = null) {
+  return getRandomImageFromDirectory(MEDALS_DIR, MEDALS_PREFIX, category);
 }

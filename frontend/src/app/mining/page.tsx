@@ -16,6 +16,8 @@ interface SavedOre {
     text: string
     dimension: OreDimension
     score: number
+    category?: string
+    categoryId?: string
   }
   created_at: string
 }
@@ -25,6 +27,23 @@ interface EditingOre {
   text: string
   dimension: OreDimension
   score: number
+  category?: string
+  categoryId?: string
+}
+
+function getOreVisualSeed(ore: {
+  text?: string
+  raw_input?: string
+  dimension: OreDimension
+  category?: string
+  categoryId?: string
+}) {
+  return [
+    ore.dimension,
+    ore.categoryId || '',
+    ore.category || '',
+    ore.text || ore.raw_input || '',
+  ].join('|')
 }
 
 export default function MiningPage() {
@@ -176,7 +195,7 @@ export default function MiningPage() {
               {ores.map((ore) => (
                 <div key={ore.id} className="rounded-[24px] border border-[#8b6914]/20 bg-white/55 p-4 shadow-sm">
                   {(() => {
-                    const visual = getOreVisual(ore.dimension, `${ore.id}-${ore.text}-${ore.dimension}`)
+                    const visual = getOreVisual(ore.dimension, getOreVisualSeed(ore))
 
                     return (
                       <div className="mb-3 flex items-center justify-between gap-3">
@@ -259,7 +278,13 @@ export default function MiningPage() {
             {savedOres.slice(0, 6).map((ore) => {
               const visual = getOreVisual(
                 ore.refined_data?.dimension ?? 'Wisdom',
-                `${ore.id}-${ore.refined_data?.text || ore.raw_input}`,
+                getOreVisualSeed({
+                  dimension: ore.refined_data?.dimension ?? 'Wisdom',
+                  text: ore.refined_data?.text,
+                  raw_input: ore.raw_input,
+                  category: ore.refined_data?.category,
+                  categoryId: ore.refined_data?.categoryId,
+                }),
               )
 
               return (

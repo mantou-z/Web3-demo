@@ -43,7 +43,7 @@ router.post('/awaken', async (req, res) => {
       const generatedImageUrl = await generateMedalImage(medalContent.imagePrompt);
       imageUrl = await uploadImageToIPFS(generatedImageUrl);
     } else {
-      imageUrl = getRandomMedalImage();
+      imageUrl = getRandomMedalImage(medalContent.assetCategory);
       if (!imageUrl) {
         imageUrl = 'https://placehold.co/400x400/1a1a2e/gold?text=Medal';
       }

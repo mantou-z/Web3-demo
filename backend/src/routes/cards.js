@@ -36,7 +36,7 @@ router.post('/refine', async (req, res) => {
       const generatedImageUrl = await generateCardImage(refinement.imagePrompt);
       imageUrl = await uploadImageToIPFS(generatedImageUrl);
     } else {
-      imageUrl = getRandomCardImage();
+      imageUrl = getRandomCardImage(refinement.assetCategory);
       if (!imageUrl) {
         imageUrl = 'https://placehold.co/400x600/1a1a2e/8b5cf6?text=Card';
       }
