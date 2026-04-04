@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAccount } from 'wagmi'
 import { FantasyShell } from '@/components/FantasyShell'
+import { FloatingArtwork } from '@/components/FloatingArtwork'
+import { archivePanelTuning, characterFigureTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 
 interface Medal {
@@ -40,18 +42,7 @@ export default function ProfilePage() {
   const { isConnected, address } = useAccount()
   const [medals, setMedals] = useState<Medal[]>([])
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
-  const [nickname, setNickname] = useState('')
-  const [editingNickname, setEditingNickname] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const storedNickname = localStorage.getItem('userNickname')
-    if (storedNickname) {
-      setNickname(storedNickname)
-      setEditingNickname(storedNickname)
-    }
-  }, [])
 
   useEffect(() => {
     if (!isConnected || !address) {
@@ -77,17 +68,23 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSaveNickname = () => {
-    const nextName = editingNickname.trim()
-    setNickname(nextName)
-    localStorage.setItem('userNickname', nextName)
-    setIsEditing(false)
-  }
-
   return (
     <FantasyShell className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
       <div className="lg:col-span-3 flex items-end justify-center lg:justify-start">
-        <img src={uiAssets.character} alt="Character" className="max-h-[520px] w-auto object-contain drop-shadow-2xl" />
+        <FloatingArtwork
+          offsetX={characterFigureTuning.offsetX}
+          offsetY={characterFigureTuning.offsetY}
+          floatY={characterFigureTuning.floatY}
+          duration={characterFigureTuning.floatDuration}
+          delay={characterFigureTuning.floatDelay}
+        >
+          <img
+            src={uiAssets.character}
+            alt="Character"
+            className="w-auto object-contain drop-shadow-2xl"
+            style={{ maxHeight: `${characterFigureTuning.maxHeight}px` }}
+          />
+        </FloatingArtwork>
       </div>
 
       <div className="lg:col-span-5 flex items-center justify-center">
@@ -137,9 +134,37 @@ export default function ProfilePage() {
       </div>
 
       <div className="lg:col-span-4 flex flex-col gap-6">
-        <div className="relative mx-auto w-full max-w-[420px] pt-16">
-          <img src={uiAssets.owl} alt="" className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 object-contain" />
-          <img src={uiAssets.parchment} alt="" className="w-full object-contain drop-shadow-xl" />
+        <div
+          className="relative mx-auto w-full"
+          style={{
+            maxWidth: `${archivePanelTuning.containerMaxWidth}px`,
+            paddingTop: `${archivePanelTuning.containerPaddingTop}px`,
+            transform: `translate(${archivePanelTuning.containerOffsetX}px, ${archivePanelTuning.containerOffsetY}px)`,
+          }}
+        >
+          <FloatingArtwork
+            className="absolute left-1/2 top-0 -translate-x-1/2"
+            offsetX={archivePanelTuning.owlOffsetX}
+            offsetY={archivePanelTuning.owlOffsetY}
+            floatY={archivePanelTuning.owlFloatY}
+            duration={archivePanelTuning.owlFloatDuration}
+            delay={archivePanelTuning.owlFloatDelay}
+          >
+            <img
+              src={uiAssets.owl}
+              alt=""
+              className="object-contain"
+              style={{ height: `${archivePanelTuning.owlSize}px`, width: `${archivePanelTuning.owlSize}px` }}
+            />
+          </FloatingArtwork>
+          <img
+            src={uiAssets.parchment}
+            alt=""
+            className="w-full object-contain drop-shadow-xl"
+            style={{
+              transform: `translate(${archivePanelTuning.parchmentOffsetX}px, ${archivePanelTuning.parchmentOffsetY}px) scale(${archivePanelTuning.parchmentScale})`,
+            }}
+          />
           <div className="absolute inset-0 flex flex-col justify-center px-10 pb-8 pt-20 text-center text-[#5b3a1c]">
             <p className="cinzel text-base font-bold uppercase tracking-[0.25em] text-[#8b6914]">Soul Archive</p>
             <p className="mt-3 text-5xl font-bold">{medals.length}</p>
@@ -147,20 +172,6 @@ export default function ProfilePage() {
             <p className="mt-4 text-base">Wallet</p>
             <p className="text-sm">{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '--'}</p>
           </div>
-        </div>
-
-        <div className="fantasy-card rounded-[32px] p-6">
-          <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Profile Name</p>
-          {isEditing ? (
-            <div className="mt-4 flex gap-3">
-              <input value={editingNickname} onChange={(event) => setEditingNickname(event.target.value)} className="input-magical flex-1" placeholder="Choose a name" />
-              <button onClick={handleSaveNickname} className="gold-button">Save</button>
-            </div>
-          ) : (
-            <button onClick={() => setIsEditing(true)} className="mt-4 w-full rounded-[24px] border border-[#8b6914]/15 bg-white/55 px-4 py-4 text-left text-lg text-[#5b3a1c] transition hover:bg-white/75">
-              {nickname || 'Add your archive name'}
-            </button>
-          )}
         </div>
       </div>
 

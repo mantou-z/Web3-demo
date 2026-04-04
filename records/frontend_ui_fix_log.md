@@ -6,6 +6,155 @@
 
 ## Completed Fixes
 
+### 0000. Collect / Refine / Awaken showcase replaced with cabinet modal
+
+Updated:
+
+- `D:\works\hackathon\frontend\src\components\ShowcaseCabinet.tsx`
+- `D:\works\hackathon\frontend\src\app\mining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\refining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\awakening\page.tsx`
+- `D:\works\hackathon\frontend\src\utils\uiAssets.ts`
+
+Changes made:
+
+- Replaced the lower yellow showcase boxes in `collect`, `refine`, and `awaken` with the cabinet artwork `9386d55d614184d987c9810f9d4db867147dc751.png`.
+- Unified all three pages onto the same cabinet-based display pattern so the right-hand side now feels like one visual system instead of three separate panels.
+- Changed the showcase interaction from passive bottom display to click-to-open inspection.
+- Kept the owl and parchment summary card in their original upper position, and placed the cabinet underneath as the secondary archive area.
+- Added a shared `ShowcaseCabinet` component so future visual tuning only needs to be done once.
+
+Current cabinet behavior:
+
+- The cabinet itself is now a clean static visual entry with no inline preview items.
+- Clicking the cabinet opens a centered modal with the full item list.
+- This keeps the right-side area cleaner and avoids crowding the owl and parchment summary block.
+
+If you want to tune the overall cabinet size on a page, edit the wrapper width here:
+
+- `D:\works\hackathon\frontend\src\components\ShowcaseCabinet.tsx`
+
+Current wrapper class:
+
+```tsx
+className="group relative mx-auto w-full max-w-[420px] text-center"
+```
+
+That `max-w-[420px]` is the main size control for the cabinet block.
+
+### 00000. Character / owl / parchment tuning and floating motion
+
+Updated:
+
+- `D:\works\hackathon\frontend\src\utils\sceneTuning.ts`
+- `D:\works\hackathon\frontend\src\components\FloatingArtwork.tsx`
+- `D:\works\hackathon\frontend\src\components\ActionHeroButton.tsx`
+- `D:\works\hackathon\frontend\src\app\mining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\refining\page.tsx`
+- `D:\works\hackathon\frontend\src\app\awakening\page.tsx`
+
+Changes made:
+
+- Extracted the girl, owl, and parchment layout numbers into a shared tuning file so you can adjust them in one place.
+- Added gentle floating motion to the girl, crystal pile, cauldron, awaken door, and owl.
+- Kept the parchment static by default so the stats panel stays readable, but its size and position are now directly adjustable.
+
+Main tuning file:
+
+- `D:\works\hackathon\frontend\src\utils\sceneTuning.ts`
+
+Girl controls:
+
+```ts
+export const characterFigureTuning = {
+  maxHeight: 520,
+  offsetX: 0,
+  offsetY: 0,
+  floatY: 14,
+  floatDuration: 6.2,
+  floatDelay: 0.2,
+}
+```
+
+Owl and parchment controls:
+
+```ts
+export const archivePanelTuning = {
+  containerMaxWidth: 420,
+  containerPaddingTop: 64,
+  containerOffsetX: 0,
+  containerOffsetY: 0,
+  owlSize: 160,
+  owlOffsetX: 0,
+  owlOffsetY: 0,
+  owlFloatY: 10,
+  owlFloatDuration: 5.4,
+  owlFloatDelay: 0.4,
+  parchmentScale: 1,
+  parchmentOffsetX: 0,
+  parchmentOffsetY: 0,
+}
+```
+
+Cabinet controls:
+
+```ts
+export const showcaseCabinetTuning = {
+  maxWidth: 300,
+  offsetX: 0,
+  offsetY: 0,
+  titleMarginTop: 16,
+  titleFontSize: 20,
+  helperMarginTop: 8,
+  helperFontSize: 18,
+}
+```
+
+Main artwork float controls:
+
+```ts
+export const heroFloatTuning = {
+  crystalPile: {
+    floatY: 16,
+    floatDuration: 4.8,
+    floatDelay: 0.1,
+  },
+  cauldron: {
+    floatY: 14,
+    floatDuration: 5.2,
+    floatDelay: 0.25,
+  },
+  awakenDoor: {
+    floatY: 12,
+    floatDuration: 5.8,
+    floatDelay: 0.35,
+  },
+}
+```
+
+Adjustment hints:
+
+- Move the girl left or right: change `characterFigureTuning.offsetX`
+- Move the girl up or down: change `characterFigureTuning.offsetY`
+- Resize the girl: change `characterFigureTuning.maxHeight`
+- Resize the owl: change `archivePanelTuning.owlSize`
+- Move the owl: change `owlOffsetX` and `owlOffsetY`
+- Resize the parchment block: change `parchmentScale`
+- Move the parchment block: change `parchmentOffsetX` and `parchmentOffsetY`
+- Move the whole owl + parchment group: change `containerOffsetX` and `containerOffsetY`
+- Resize the cabinet: change `showcaseCabinetTuning.maxWidth`
+- Move the cabinet: change `showcaseCabinetTuning.offsetX` and `showcaseCabinetTuning.offsetY`
+- Adjust cabinet title spacing or size: change `titleMarginTop` and `titleFontSize`
+- Adjust cabinet helper text spacing or size: change `helperMarginTop` and `helperFontSize`
+- Make floating stronger or weaker: change the matching `floatY`
+- Make floating faster or slower: change the matching `floatDuration`
+
+Additional follow-up:
+
+- Applied the same girl / owl / parchment tuning system to `profile`, so its side figures now stay consistent with `collect`, `refine`, and `awaken`.
+- Kept the medal wall and wall medals static in `profile` because they are interactive and should remain stable for clicking.
+- Reduced page-switch flicker by disabling the floating components' initial mount animation. Floating now starts from the settled layout state instead of animating in from a separate first frame.
+
 ### 000. Background consistency and ore glow variation
 
 Updated:

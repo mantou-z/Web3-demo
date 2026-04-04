@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAccount } from 'wagmi'
+import { ActionHeroButton } from '@/components/ActionHeroButton'
 import { FantasyShell } from '@/components/FantasyShell'
+import { FloatingArtwork } from '@/components/FloatingArtwork'
+import { ShowcaseCabinet } from '@/components/ShowcaseCabinet'
+import { archivePanelTuning, characterFigureTuning, heroFloatTuning } from '@/utils/sceneTuning'
 import { uiAssets } from '@/utils/uiAssets'
 import { getOreVisual, type OreDimension } from '@/utils/oreVisuals'
 
@@ -116,7 +120,20 @@ export default function RefiningPage() {
   return (
     <FantasyShell className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
       <div className="lg:col-span-3 flex items-end justify-center lg:justify-start">
-        <img src={uiAssets.character} alt="Character" className="max-h-[520px] w-auto object-contain drop-shadow-2xl" />
+        <FloatingArtwork
+          offsetX={characterFigureTuning.offsetX}
+          offsetY={characterFigureTuning.offsetY}
+          floatY={characterFigureTuning.floatY}
+          duration={characterFigureTuning.floatDuration}
+          delay={characterFigureTuning.floatDelay}
+        >
+          <img
+            src={uiAssets.character}
+            alt="Character"
+            className="w-auto object-contain drop-shadow-2xl"
+            style={{ maxHeight: `${characterFigureTuning.maxHeight}px` }}
+          />
+        </FloatingArtwork>
       </div>
 
       <div className="lg:col-span-5 flex flex-col items-center gap-6">
@@ -136,20 +153,55 @@ export default function RefiningPage() {
           </div>
         ) : (
           <>
-            <button onClick={() => setShowSelection((current) => !current)} className="group relative w-full max-w-[420px]">
-              <div className="absolute inset-0 rounded-full bg-purple-300/20 blur-3xl" />
-              <img src={uiAssets.cauldron} alt="Cauldron" className="relative z-10 w-full object-contain drop-shadow-[0_15px_40px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:scale-[1.02]" />
-              <p className="cinzel mt-3 text-center text-lg font-bold uppercase tracking-[0.3em] text-[#8b6914]">Click to Refine</p>
-            </button>
+            <ActionHeroButton
+              imageSrc={uiAssets.cauldron}
+              imageAlt="Cauldron"
+              label="Click to Refine"
+              onClick={() => setShowSelection((current) => !current)}
+              glowClassName="bg-purple-300/20"
+              imageClassName="drop-shadow-[0_15px_40px_rgba(168,85,247,0.35)]"
+              maxWidth={420}
+              floatY={heroFloatTuning.cauldron.floatY}
+              floatDuration={heroFloatTuning.cauldron.floatDuration}
+              floatDelay={heroFloatTuning.cauldron.floatDelay}
+            />
 
           </>
         )}
       </div>
 
       <div className="lg:col-span-4 flex flex-col gap-6">
-        <div className="relative mx-auto w-full max-w-[420px] pt-16">
-          <img src={uiAssets.owl} alt="" className="absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 object-contain" />
-          <img src={uiAssets.parchment} alt="" className="w-full object-contain drop-shadow-xl" />
+        <div
+          className="relative mx-auto w-full"
+          style={{
+            maxWidth: `${archivePanelTuning.containerMaxWidth}px`,
+            paddingTop: `${archivePanelTuning.containerPaddingTop}px`,
+            transform: `translate(${archivePanelTuning.containerOffsetX}px, ${archivePanelTuning.containerOffsetY}px)`,
+          }}
+        >
+          <FloatingArtwork
+            className="absolute left-1/2 top-0 -translate-x-1/2"
+            offsetX={archivePanelTuning.owlOffsetX}
+            offsetY={archivePanelTuning.owlOffsetY}
+            floatY={archivePanelTuning.owlFloatY}
+            duration={archivePanelTuning.owlFloatDuration}
+            delay={archivePanelTuning.owlFloatDelay}
+          >
+            <img
+              src={uiAssets.owl}
+              alt=""
+              className="object-contain"
+              style={{ height: `${archivePanelTuning.owlSize}px`, width: `${archivePanelTuning.owlSize}px` }}
+            />
+          </FloatingArtwork>
+          <img
+            src={uiAssets.parchment}
+            alt=""
+            className="w-full object-contain drop-shadow-xl"
+            style={{
+              transform: `translate(${archivePanelTuning.parchmentOffsetX}px, ${archivePanelTuning.parchmentOffsetY}px) scale(${archivePanelTuning.parchmentScale})`,
+            }}
+          />
           <div className="absolute inset-0 flex flex-col justify-center px-10 pb-8 pt-20 text-center text-[#5b3a1c]">
             <p className="cinzel text-base font-bold uppercase tracking-[0.25em] text-[#8b6914]">Inventory</p>
             <p className="mt-3 text-5xl font-bold">{ores.length}</p>
@@ -159,29 +211,23 @@ export default function RefiningPage() {
           </div>
         </div>
 
-        <div className="fantasy-card rounded-[32px] p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="cinzel text-sm font-bold uppercase tracking-[0.25em] text-[#8b6914]">Card Gallery</p>
-              <p className="text-base text-[#6b4a2c]">Latest refined cards from the backend.</p>
+        <ShowcaseCabinet
+          title="Card Showcase"
+          helperText={isLoading ? 'Loading archive echoes...' : 'Click to inspect your refined cards'}
+          emptyMessage="Your first refined card will appear here."
+          items={cards.slice(0, 12)}
+          renderSlot={(card) => (
+            <div className="h-[72%] w-[72%] overflow-hidden rounded-[14px] border border-white/40 bg-white/25 shadow-md">
+              <img src={card.image_url} alt={card.title} className="h-full w-full object-cover" />
             </div>
-            {isLoading && <span className="text-sm text-[#8b6914]">Loading...</span>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {cards.slice(0, 4).map((card) => (
-              <div key={card.id} className="overflow-hidden rounded-[24px] border border-[#8b6914]/15 bg-white/60 p-2">
-                <img src={card.image_url} alt={card.title} className="aspect-[3/4] w-full rounded-[18px] object-cover" />
-                <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{card.title}</p>
-              </div>
-            ))}
-            {!isLoading && cards.length === 0 && (
-              <div className="col-span-2 rounded-[24px] border border-dashed border-[#8b6914]/20 bg-white/35 px-4 py-10 text-center text-[#7b5a39]">
-                Your first refined card will appear here.
-              </div>
-            )}
-          </div>
-        </div>
+          )}
+          renderModalItem={(card) => (
+            <div className="overflow-hidden rounded-[24px] border border-[#8b6914]/15 bg-white/60 p-2">
+              <img src={card.image_url} alt={card.title} className="aspect-[3/4] w-full rounded-[18px] object-cover" />
+              <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#5b3a1c]">{card.title}</p>
+            </div>
+          )}
+        />
       </div>
 
       <AnimatePresence>
