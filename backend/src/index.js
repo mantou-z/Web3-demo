@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import oreRoutes from './routes/ores.js';
 import cardRoutes from './routes/cards.js';
 import medalRoutes from './routes/medals.js';
-import { seedDemoDataIfEnabled } from './services/demoSeed.js';
+import { seedDemoDataIfEnabled } from './services/demoSeedRuntime.js';
 
 dotenv.config();
 

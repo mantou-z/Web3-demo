@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../utils/supabase.js';
 import { awakenMedal, generateMedalImage } from '../services/openai.js';
 import { uploadImageToIPFS } from '../utils/ipfs.js';
-import { getRandomMedalImage } from '../utils/localImages.js';
+import { getConfiguredMedalImage } from '../utils/localImages.js';
 
 const USE_AI_IMAGES = process.env.USE_AI_IMAGES !== 'false';
 
@@ -43,7 +43,7 @@ router.post('/awaken', async (req, res) => {
       const generatedImageUrl = await generateMedalImage(medalContent.imagePrompt);
       imageUrl = await uploadImageToIPFS(generatedImageUrl);
     } else {
-      imageUrl = getRandomMedalImage(medalContent.assetCategory);
+      imageUrl = getConfiguredMedalImage(medalContent.categoryId, `${walletAddress}-${cardIds.join('|')}-${existingMedalId || 'new'}`);
       if (!imageUrl) {
         imageUrl = 'https://placehold.co/400x400/1a1a2e/gold?text=Medal';
       }

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../utils/supabase.js';
 import { refineOres, generateCardImage } from '../services/openai.js';
 import { uploadImageToIPFS } from '../utils/ipfs.js';
-import { getRandomCardImage } from '../utils/localImages.js';
+import { getConfiguredCardImage } from '../utils/localImages.js';
 
 const USE_AI_IMAGES = process.env.USE_AI_IMAGES !== 'false';
 
@@ -36,7 +36,7 @@ router.post('/refine', async (req, res) => {
       const generatedImageUrl = await generateCardImage(refinement.imagePrompt);
       imageUrl = await uploadImageToIPFS(generatedImageUrl);
     } else {
-      imageUrl = getRandomCardImage(refinement.assetCategory);
+      imageUrl = getConfiguredCardImage(refinement.categoryId, `${walletAddress}-${oreIds.join('|')}`);
       if (!imageUrl) {
         imageUrl = 'https://placehold.co/400x600/1a1a2e/8b5cf6?text=Card';
       }
